@@ -1,0 +1,23 @@
+{
+    "env": {
+        "es6": true,
+        "browser": true
+    },
+    "parserOptions": {
+        "ecmaVersion": 9,
+        "sourceType": "module",
+        "ecmaFeatures": {
+            "jsx": true
+        }
+    },
+    "settings": {
+        "react": {
+            "version": "detect"
+        }
+    },
+    "rules": {
+        "semi": "error"
+    },
+    "ignorePatterns": ["serviceWorker.js", "App.test.js"],
+    "extends": ["eslint:recommended", "plugin:react/recommended"]
+}
