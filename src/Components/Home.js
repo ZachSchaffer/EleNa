@@ -1,87 +1,53 @@
 import React from 'react';
-import {
-    Typography,
-    FormControl,
-    Input,
-    InputLabel,
-    FormHelperText,
-    Button,
-} from '@material-ui/core';
-import axios from 'axios';
+import { Button } from '@material-ui/core';
+import AddressInput from './AddressInput';
 
 class Home extends React.Component {
     constructor(props) {
         super(props);
-        this.handleFetchGeoData = this.handleFetchGeoData.bind(this);
         this.state = {
-            address: '',
-            geoDataError: false,
-            geoDataLoading: true,
-            latitude: 'null',
-            longitude: 'null',
+            shouldFetch: 0,
+            startElevation: null,
+            endElevation: null,
         };
     }
 
-    handleFetchGeoData() {
-        this.setState({ geoDataLoading: true });
-        this.setState({ geoDataError: false });
-        axios
-            .get(
-                `http://open.mapquestapi.com/geocoding/v1/address?key=${process.env.REACT_APP_MAPQUEST_API_KEY}&location=${this.state.address}`
-            )
-            .then((resp) => {
-                console.log('Response received');
-                console.log(resp);
-                try {
-                    this.setState({
-                        latitude:
-                            resp.data.results[0].locations[0].displayLatLng.lat,
-                    });
-                    this.setState({
-                        longitude:
-                            resp.data.results[0].locations[0].displayLatLng.lng,
-                    });
-                } catch (error) {
-                    this.setState({ geoDataError: true });
-                    console.log(
-                        'Error extracting latitude/longitude. Ensure a valid address was input'
-                    );
-                }
-                this.setState({ geoDataLoading: false });
-            })
-            .catch((err) => {
-                console.log(`Fetch failed with error ${err.message}`);
-                this.setState({ geoDataError: true });
-                this.setState({ geoDataLoading: false });
-            });
+    setStartElevation(elevation) {
+        this.setState({ startElevation: elevation });
+    }
+    setEndElevation(elevation) {
+        this.setState({ endElevation: elevation });
     }
 
     render() {
         return (
             <div>
-                <FormControl>
-                    <InputLabel htmlFor="my-input">Address</InputLabel>
-                    <Input
-                        id="my-input"
-                        aria-describedby="my-helper-text"
-                        onChange={(e) =>
-                            this.setState({ address: e.target.value })
-                        }
-                    />
-                    <FormHelperText id="my-helper-text">
-                        Input Address.
-                    </FormHelperText>
-                </FormControl>
-                <Button onClick={this.handleFetchGeoData}>Get GeoData</Button>
-
-                <Typography>
-                    Latitude:{' '}
-                    {this.state.geoDataError ? 'null' : this.state.latitude}
-                </Typography>
-                <Typography>
-                    Longitude:{' '}
-                    {this.state.geoDataError ? 'null' : this.state.longitude}
-                </Typography>
+                <AddressInput
+                    shouldFetch={this.state.shouldFetch}
+                    setElevation={this.setStartElevation.bind(this)}
+                    addressLabel="Starting Address"
+                    inputID="Starting Input"
+                />
+                <br />
+                <AddressInput
+                    shouldFetch={this.state.shouldFetch}
+                    setElevation={this.setEndElevation.bind(this)}
+                    addressLabel="Ending Address"
+                    inputID="Ending Input"
+                />
+                <br />
+                <Button
+                    onClick={() =>
+                        this.setState({
+                            shouldFetch: this.state.shouldFetch + 1,
+                        })
+                    }
+                    variant="contained"
+                    color="primary"
+                    aria-label="Fetch data for start and end address"
+                >
+                    Fetch Data
+                </Button>
             </div>
         );
     }
