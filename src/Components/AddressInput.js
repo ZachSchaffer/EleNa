@@ -1,6 +1,10 @@
 import React from 'react';
 import { Typography, FormControl, Input, InputLabel } from '@material-ui/core';
 import axios from 'axios';
+import {
+    getElevationURL,
+    getGeoDataURL,
+} from '../Functions/NetworkingFunctions';
 import PropTypes from 'prop-types';
 
 class AddressInput extends React.Component {
@@ -34,9 +38,7 @@ class AddressInput extends React.Component {
             elevation: null,
         });
         axios
-            .get(
-                `http://open.mapquestapi.com/geocoding/v1/address?key=${process.env.REACT_APP_MAPQUEST_API_KEY}&location=${this.state.address}`
-            )
+            .get(getGeoDataURL(this.state.address))
             .then((resp) => {
                 console.log('Response received');
                 console.log(resp);
@@ -49,7 +51,12 @@ class AddressInput extends React.Component {
                     });
                     axios
                         .get(
-                            `http://open.mapquestapi.com/elevation/v1/profile?key=${process.env.REACT_APP_MAPQUEST_API_KEY}&unit=f&shapeFormat=raw&latLngCollection=${resp.data.results[0].locations[0].displayLatLng.lat},${resp.data.results[0].locations[0].displayLatLng.lng}`
+                            getElevationURL(
+                                resp.data.results[0].locations[0].displayLatLng
+                                    .lat,
+                                resp.data.results[0].locations[0].displayLatLng
+                                    .lng
+                            )
                         )
                         .then((resp) => {
                             console.log('Response received');
