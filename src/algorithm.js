@@ -73,14 +73,7 @@ class Dijkstra {
         this.nodesList = nodesList;
         this.elevation = elevation;
     }
-    determinePath() {
-        if (!this.elevation) {
-            for (let i = 0; i < this.nodesList.length; i++) {
-                this.nodesList[i].setElevation(
-                    1 / this.nodesList[i].getElevation()
-                );
-            }
-        }
+    createAdjacencyMatrix() {
         let adjMatrix = [];
         console.log(this.nodesList);
         //calculate elevation gain between each pair of points
@@ -98,7 +91,22 @@ class Dijkstra {
             }
             adjMatrix.push(elevationDiff);
         }
+
+        //if we want to maximize instead of minimize, set elevation to 1/elevation
+        if (!this.elevation) {
+            for (let j = 0; j < this.nodesList.length; j++) {
+                for (let i = 0; i < this.nodesList.length; i++) {
+                    if (adjMatrix[i][j] === 0) {
+                        adjMatrix[i][j] = 1 / adjMatrix[i][j];
+                    }
+                }
+            }
+        }
+        return adjMatrix;
+    }
+    determinePath(adjMatrix) {
         console.log(adjMatrix);
+
         //run dijkstra to get shortest path with adjMatrix values
         //at each step check to make sure distance within k%
         //if exceeds k%, set all neighbors of current node to infinity in matrix
@@ -117,5 +125,6 @@ let nodesList = [
     end,
 ];
 let path = new Dijkstra(nodesList, true);
-path.determinePath();
+let matrix = path.createAdjacencyMatrix();
+path.determinePath(matrix);
 //console.log(distance);
