@@ -1,4 +1,5 @@
 import PriorityQueue from 'priorityqueue';
+import { getElevationURLMulti } from '../Functions/NetworkingFunctions';
 
 export default class PathingService {
     constructor(start, end) {
@@ -48,7 +49,14 @@ export default class PathingService {
     //calculate the search area within K % of the shortest path
     getSearchArea() {}
     //create grid of location objects in the search area
-    createGrid() {}
+    createGrid() {
+        var test = [
+            [39.74012, -104.9849],
+            [39.7995, -105.7237],
+            [39.6404, -106.3736],
+        ];
+        console.log(getElevationURLMulti(test));
+    }
 }
 
 class Location {
