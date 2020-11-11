@@ -25,6 +25,8 @@ class Algorithm {
     }
     //calculate the search area within K % of the shortest path
     getSearchArea() {}
+    //create grid of location objects in the search area
+    createGrid() {}
 }
 
 class Location {
@@ -42,10 +44,78 @@ class Location {
     getElevation() {
         return this.elevation;
     }
+    setElevation(elevation) {
+        this.elevation = elevation;
+    }
+}
+
+function distance(start, end) {
+    var lat1 = start.getLatitude();
+    var lon1 = start.getLongitude();
+    var lat2 = end.getLatitude();
+    var lon2 = end.getLongitude();
+    var R = 3958.8; // Radius of the earth in miles
+    var dLat = (lat2 - lat1) * (Math.PI / 180);
+    var dLon = (lon2 - lon1) * (Math.PI / 180);
+    var a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos((Math.PI / 180) * lat1) *
+            Math.cos((Math.PI / 180) * lat2) *
+            Math.sin(dLon / 2) *
+            Math.sin(dLon / 2);
+    var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    var d = R * c; // Distance in miles
+    return d;
+}
+
+class Dijkstra {
+    constructor(nodesList, elevation) {
+        this.nodesList = nodesList;
+        this.elevation = elevation;
+    }
+    determinePath() {
+        if (!this.elevation) {
+            for (let i = 0; i < this.nodesList.length; i++) {
+                this.nodesList[i].setElevation(
+                    1 / this.nodesList[i].getElevation()
+                );
+            }
+        }
+        let adjMatrix = [];
+        console.log(this.nodesList);
+        //calculate elevation gain between each pair of points
+        for (let j = 0; j < this.nodesList.length; j++) {
+            let currNode = this.nodesList[j].elevation;
+            let elevationDiff = [];
+            let elevationGain = 0;
+            for (let i = 0; i < this.nodesList.length; i++) {
+                if (this.nodesList[i].elevation - currNode > 0) {
+                    elevationGain = this.nodesList[i].elevation - currNode;
+                } else {
+                    elevationGain = 0;
+                }
+                elevationDiff.push(elevationGain);
+            }
+            adjMatrix.push(elevationDiff);
+        }
+        console.log(adjMatrix);
+        //run dijkstra to get shortest path with adjMatrix values
+        //at each step check to make sure distance within k%
+        //if exceeds k%, set all neighbors of current node to infinity in matrix
+    }
 }
 
 let start = new Location(42.380368, -72.523143, 288.71);
 let end = new Location(41, -71, 88);
 let alg = new Algorithm(start, end);
 alg.shortestPath();
+distance(start, end);
+let nodesList = [
+    start,
+    new Location(41.5, -72, 0),
+    new Location(42, -71.5, 500),
+    end,
+];
+let path = new Dijkstra(nodesList, true);
+path.determinePath();
 //console.log(distance);
