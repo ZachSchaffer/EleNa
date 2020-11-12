@@ -2,6 +2,7 @@ import React from 'react';
 import { Button } from '@material-ui/core';
 import AddressInput from './AddressInput';
 import PathingService from '../Functions/PathingService';
+import Location from '../Functions/Location';
 
 class Home extends React.Component {
     constructor(props) {
@@ -11,7 +12,11 @@ class Home extends React.Component {
             startElevation: null,
             endElevation: null,
         };
-        this.pathingService = new PathingService(0, 1);
+        // TODO: this needs to be changed to take in the two location objects created by clicking the fetch data button
+        var startLocation = new Location(42.340382, -72.496819, 5);
+        var endLocation = new Location(42.35, -72.6, 2);
+        console.log('test');
+        this.pathingService = new PathingService(startLocation, endLocation);
     }
 
     setStartElevation(elevation) {
@@ -41,11 +46,12 @@ class Home extends React.Component {
                 />
                 <br />
                 <Button
-                    onClick={() =>
+                    onClick={() => {
                         this.setState({
                             shouldFetch: this.state.shouldFetch + 1,
-                        })
-                    }
+                        });
+                        console.log(this.state);
+                    }}
                     variant="contained"
                     color="primary"
                     aria-label="Fetch data for start and end address"

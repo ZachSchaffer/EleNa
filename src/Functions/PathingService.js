@@ -1,19 +1,44 @@
 import PriorityQueue from 'priorityqueue';
 import { getElevationURLMulti } from '../Functions/NetworkingFunctions';
+import Location from './Location';
 
 export default class PathingService {
     constructor(start, end) {
         this.start = start;
         this.end = end;
+        this.createGrid = this.createGrid.bind(this);
+        this.shortestPath = this.shortestPath.bind(this);
+    }
+    //create grid of location objects in the search area
+    createGrid() {
+        // 1 degree of latitude is 69 miles or 364k feet
+        var latDif = Math.abs(
+            this.start.getLatitude() - this.end.getLatitude()
+        );
+        var lngDif = Math.abs(
+            this.start.getLongitude() - this.end.getLongitude()
+        );
+        var numHorizontalPoints = (latDif * 364000) / 100; // convert to feet then get a point every 100 feet
+        var numVerticalPoints = (lngDif * 364434.53) / 100; // convert to feet then get a point every 100 feet
+        console.log(numHorizontalPoints);
+        console.log(numVerticalPoints);
+        var test = [
+            [39.74012, -104.9849],
+            [39.7995, -105.7237],
+            [39.6404, -106.3736],
+        ];
+        var elevationApiURL = getElevationURLMulti(test);
+        console.log(elevationApiURL);
     }
 
     //calculate the shortest path between 2 points in miles
     shortestPath() {
         //temporary code from https://stackoverflow.com/questions/27928/calculate-distance-between-two-latitude-longitude-points-haversine-formula?page=1&tab=votes
-        var lat1 = start.getLatitude();
-        var lon1 = start.getLongitude();
-        var lat2 = end.getLatitude();
-        var lon2 = end.getLongitude();
+        console.log(this.start.getLongitude());
+        var lat1 = this.start.getLatitude();
+        var lon1 = this.start.getLongitude();
+        var lat2 = this.end.getLatitude();
+        var lon2 = this.end.getLongitude();
         var R = 3958.8; // Radius of the earth in miles
         var dLat = (lat2 - lat1) * (Math.PI / 180);
         var dLon = (lon2 - lon1) * (Math.PI / 180);
@@ -48,35 +73,6 @@ export default class PathingService {
 
     //calculate the search area within K % of the shortest path
     getSearchArea() {}
-    //create grid of location objects in the search area
-    createGrid() {
-        var test = [
-            [39.74012, -104.9849],
-            [39.7995, -105.7237],
-            [39.6404, -106.3736],
-        ];
-        console.log(getElevationURLMulti(test));
-    }
-}
-
-class Location {
-    constructor(longitude, latitude, elevation) {
-        this.longitude = longitude;
-        this.latitude = latitude;
-        this.elevation = elevation;
-    }
-    getLongitude() {
-        return this.longitude;
-    }
-    getLatitude() {
-        return this.latitude;
-    }
-    getElevation() {
-        return this.elevation;
-    }
-    setElevation(elevation) {
-        this.elevation = elevation;
-    }
 }
 
 function distance(start, end) {
