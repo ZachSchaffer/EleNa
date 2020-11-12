@@ -16,28 +16,32 @@ export default class PathingService {
     //create grid of location objects in the search area
     createGrid() {
         // 1 degree of latitude is 69 miles or 364k feet
-
+        //var grid = [];
         var latDif = Math.abs(
             this.start.getLatitude() - this.end.getLatitude()
         );
         var lngDif = Math.abs(
             this.start.getLongitude() - this.end.getLongitude()
         );
-        var numHorizontalPoints = (latDif * FEET_IN_LAT_DEGREE) / this.accuracy; // convert to feet then get a point every <accuracy> feet
-        var numVerticalPoints = (lngDif * FEET_IN_LNG_DEGREE) / this.accuracy; // convert to feet then get a point every <accuracy> feet
-        console.log(numHorizontalPoints);
-        console.log(numVerticalPoints);
-        //var latVariation = (latDif / FEET_IN_LAT_DEGREE) * this.accuracy;
-        //var lngVariation = (lngDif / FEET_IN_LNG_DEGREE) * this.accuracy;
+        var y = Math.floor((latDif * FEET_IN_LAT_DEGREE) / this.accuracy); // convert to feet then get a point every <accuracy> feet
+        var x = Math.floor((lngDif * FEET_IN_LNG_DEGREE) / this.accuracy); // convert to feet then get a point every <accuracy> feet
+        console.log(y);
+        console.log(x);
+        var latVariation = (latDif / FEET_IN_LAT_DEGREE) * this.accuracy;
+        var lngVariation = (lngDif / FEET_IN_LNG_DEGREE) * this.accuracy;
         var corners = this.getSearchArea(latDif, lngDif, 2);
         console.log(corners);
-
-        var test = [
-            [39.74012, -104.9849],
-            [39.7995, -105.7237],
-            [39.6404, -106.3736],
-        ];
-        var elevationApiURL = getElevationURLMulti(test);
+        var currLatValue = corners[3][0];
+        var currLngValue = corners[3][1];
+        var latLngList = [];
+        while (currLatValue >= corners[0][0]) {
+            while (currLngValue <= corners[1][1]) {
+                latLngList.push([currLatValue, currLngValue]);
+                currLatValue -= latVariation;
+                currLngValue += lngVariation;
+            }
+        }
+        var elevationApiURL = getElevationURLMulti(latLngList);
         console.log(elevationApiURL);
     }
 
@@ -90,37 +94,37 @@ export default class PathingService {
         var latCushion = (latDif * k) / 100; // latitude cushion of k%
         var lngCushion = (lngDif * k) / 100; // longitude cushion of k%
         if (lat1 <= lat2 && lng1 >= lng2) {
-            // start in top left
+            // start in bottom right
             return [
-                [lat1 - latCushion, lng1 + lngCushion], // top left
+                [lat1 - latCushion, lng1 + lngCushion], // bottom right
                 [lat2 + latCushion, lng1 + lngCushion], // top right
                 [lat1 - latCushion, lng2 - lngCushion], // bottom left
-                [lat2 + latCushion, lng2 - lngCushion], // bottom right
+                [lat2 + latCushion, lng2 - lngCushion], // top left
             ];
         } else if (lat1 <= lat2 && lng1 <= lng2) {
             // start in bottom left
             return [
-                [lat1 - latCushion, lng2 + lngCushion], // top left
+                [lat1 - latCushion, lng2 + lngCushion], // bottom right
                 [lat2 + latCushion, lng2 + lngCushion], // top right
                 [lat1 - latCushion, lng1 - lngCushion], // bottom left
-                [lat2 + latCushion, lng1 - lngCushion], // bottom right
+                [lat2 + latCushion, lng1 - lngCushion], // top left
             ];
         } else if (lat1 >= lat2 && lng1 >= lng2) {
             // start in top right
             return [
-                [lat2 - latCushion, lng1 + lngCushion], // top left
+                [lat2 - latCushion, lng1 + lngCushion], // bottom right
                 [lat1 + latCushion, lng1 + lngCushion], // top right
                 [lat2 - latCushion, lng2 - lngCushion], // bottom left
-                [lat1 + latCushion, lng2 - lngCushion], // bottom right
+                [lat1 + latCushion, lng2 - lngCushion], // top left
             ];
         }
         // lat1 >= lat2 && lng1 <= lng2
-        // start in bottom right
+        // start in top left
         return [
-            [lat2 - latCushion, lng2 + lngCushion], // top left
+            [lat2 - latCushion, lng2 + lngCushion], // bottom right
             [lat1 + latCushion, lng2 + lngCushion], // top right
             [lat2 - latCushion, lng1 - lngCushion], // bottom left
-            [lat1 + latCushion, lng1 - lngCushion], // bottom right
+            [lat1 + latCushion, lng1 - lngCushion], // top left
         ];
     }
 
