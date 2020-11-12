@@ -2,26 +2,36 @@ import PriorityQueue from 'priorityqueue';
 import { getElevationURLMulti } from '../Functions/NetworkingFunctions';
 import Location from './Location';
 
+const FEET_IN_LAT_DEGREE = 364000;
+const FEET_IN_LNG_DEGREE = 364434.53; // only for Amherst, MA
+
 export default class PathingService {
-    constructor(start, end) {
+    constructor(start, end, accuracy) {
         this.start = start;
         this.end = end;
+        this.accuracy = accuracy;
         this.createGrid = this.createGrid.bind(this);
         this.shortestPath = this.shortestPath.bind(this);
     }
     //create grid of location objects in the search area
     createGrid() {
         // 1 degree of latitude is 69 miles or 364k feet
+
         var latDif = Math.abs(
             this.start.getLatitude() - this.end.getLatitude()
         );
         var lngDif = Math.abs(
             this.start.getLongitude() - this.end.getLongitude()
         );
-        var numHorizontalPoints = (latDif * 364000) / 100; // convert to feet then get a point every 100 feet
-        var numVerticalPoints = (lngDif * 364434.53) / 100; // convert to feet then get a point every 100 feet
+        var numHorizontalPoints = (latDif * FEET_IN_LAT_DEGREE) / this.accuracy; // convert to feet then get a point every <accuracy> feet
+        var numVerticalPoints = (lngDif * FEET_IN_LNG_DEGREE) / this.accuracy; // convert to feet then get a point every <accuracy> feet
         console.log(numHorizontalPoints);
         console.log(numVerticalPoints);
+        //var latVariation = (latDif / FEET_IN_LAT_DEGREE) * this.accuracy;
+        //var lngVariation = (lngDif / FEET_IN_LNG_DEGREE) * this.accuracy;
+        var corners = this.getSearchArea(latDif, lngDif, 2);
+        console.log(corners);
+
         var test = [
             [39.74012, -104.9849],
             [39.7995, -105.7237],
@@ -72,7 +82,50 @@ export default class PathingService {
     }
 
     //calculate the search area within K % of the shortest path
-    getSearchArea() {}
+    getSearchArea(latDif, lngDif, k) {
+        var lat1 = this.start.getLatitude();
+        var lng1 = this.start.getLongitude();
+        var lat2 = this.end.getLatitude();
+        var lng2 = this.end.getLongitude();
+        var latCushion = (latDif * k) / 100; // latitude cushion of k%
+        var lngCushion = (lngDif * k) / 100; // longitude cushion of k%
+        if (lat1 <= lat2 && lng1 >= lng2) {
+            // start in top left
+            return [
+                [lat1 - latCushion, lng1 + lngCushion], // top left
+                [lat2 + latCushion, lng1 + lngCushion], // top right
+                [lat1 - latCushion, lng2 - lngCushion], // bottom left
+                [lat2 + latCushion, lng2 - lngCushion], // bottom right
+            ];
+        } else if (lat1 <= lat2 && lng1 <= lng2) {
+            // start in bottom left
+            return [
+                [lat1 - latCushion, lng2 + lngCushion], // top left
+                [lat2 + latCushion, lng2 + lngCushion], // top right
+                [lat1 - latCushion, lng1 - lngCushion], // bottom left
+                [lat2 + latCushion, lng1 - lngCushion], // bottom right
+            ];
+        } else if (lat1 >= lat2 && lng1 >= lng2) {
+            // start in top right
+            return [
+                [lat2 - latCushion, lng1 + lngCushion], // top left
+                [lat1 + latCushion, lng1 + lngCushion], // top right
+                [lat2 - latCushion, lng2 - lngCushion], // bottom left
+                [lat1 + latCushion, lng2 - lngCushion], // bottom right
+            ];
+        }
+        // lat1 >= lat2 && lng1 <= lng2
+        // start in bottom right
+        return [
+            [lat2 - latCushion, lng2 + lngCushion], // top left
+            [lat1 + latCushion, lng2 + lngCushion], // top right
+            [lat2 - latCushion, lng1 - lngCushion], // bottom left
+            [lat1 + latCushion, lng1 - lngCushion], // bottom right
+        ];
+    }
+
+    //returns corners of search area
+    //
 }
 
 function distance(start, end) {

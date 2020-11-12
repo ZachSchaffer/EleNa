@@ -15,8 +15,12 @@ class Home extends React.Component {
         // TODO: this needs to be changed to take in the two location objects created by clicking the fetch data button
         var startLocation = new Location(42.340382, -72.496819, 5);
         var endLocation = new Location(42.35, -72.6, 2);
-        console.log('test');
-        this.pathingService = new PathingService(startLocation, endLocation);
+        var accuracy = 50;
+        this.pathingService = new PathingService(
+            startLocation,
+            endLocation,
+            accuracy
+        );
     }
 
     setStartElevation(elevation) {
@@ -50,7 +54,6 @@ class Home extends React.Component {
                         this.setState({
                             shouldFetch: this.state.shouldFetch + 1,
                         });
-                        console.log(this.state);
                     }}
                     variant="contained"
                     color="primary"
