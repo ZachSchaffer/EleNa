@@ -111,22 +111,17 @@ export default class PathingService {
     var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     var d = R * c; // Distance in miles
 
-    // TODO heres your pqueue
-    let pQueue = new PriorityQueue((a, b) => {
-      // TODO change me to work with whatever you're using
-      if (a < b) {
-        return -1;
-      } else if (a > b) {
-        return 1;
-      } else {
-        return 0;
-      }
-    });
-
-    pQueue.push(1);
-    pQueue.push(2);
-
-    console.log(pQueue.pop());
+    // TODO pass in grid
+    let nodesList = [
+      start,
+      new Location(41.5, -72, 0),
+      new Location(42, -71.5, 500),
+      end,
+    ];
+    console.log(this.start);
+    let path = new Dijkstra(nodesList, this.start, this.end, true);
+    let matrix = path.createAdjacencyMatrix();
+    path.determinePath(matrix);
 
     return d;
   }
@@ -195,8 +190,10 @@ function distance(start, end) {
 }
 
 class Dijkstra {
-  constructor(nodesList, elevation) {
+  constructor(nodesList, start, end, elevation) {
     this.nodesList = nodesList;
+    this.start = start;
+    this.end = end;
     this.elevation = elevation;
   }
   createAdjacencyMatrix() {
@@ -232,10 +229,15 @@ class Dijkstra {
   }
   determinePath(adjMatrix) {
     console.log(adjMatrix);
+    let pQueue = new PriorityQueue();
+    console.log(this.start);
+    pQueue.push(1);
+    pQueue.push(4);
 
+    console.log(pQueue.pop());
     //run dijkstra to get shortest path with adjMatrix values
-    //at each step check to make sure distance within k%
-    //if exceeds k%, set all neighbors of current node to infinity in matrix
+    //at each step check to make sure distance within x%
+    //if exceeds x%, set all neighbors of current node to infinity in matrix
   }
 }
 
