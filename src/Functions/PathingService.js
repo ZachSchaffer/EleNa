@@ -1,4 +1,4 @@
-import PriorityQueue from 'priorityqueue';
+//import PriorityQueue from 'priorityqueue';
 import { getElevationURLMulti } from '../Functions/NetworkingFunctions';
 import Location from './Location';
 import axios from 'axios';
@@ -116,10 +116,11 @@ export default class PathingService {
       this.start,
       new Location(41.5, -72, 0),
       new Location(42, -71.5, 500),
-      this.end,
+      new Location(43, -76.5, 1000),
     ];
     let path = new Dijkstra(nodesList, true);
     let matrix = path.createAdjacencyMatrix();
+    console.log('determine path');
     path.determinePath(matrix);
 
     return d;
@@ -188,6 +189,9 @@ function distance(start, end) {
   return d;
 }
 
+//TODO I am assuming that the first node in the grid is the start and the last node is the end.
+//Not sure if I should change that
+//I am also assuming that we will never visit the same node twice
 class Dijkstra {
   constructor(nodesList, elevation) {
     this.nodesList = nodesList;
@@ -197,7 +201,6 @@ class Dijkstra {
   }
   createAdjacencyMatrix() {
     let adjMatrix = [];
-    console.log(this.nodesList);
     //calculate elevation gain between each pair of points
     for (let j = 0; j < this.nodesList.length; j++) {
       let currNode = this.nodesList[j].elevation;
@@ -227,31 +230,75 @@ class Dijkstra {
     return adjMatrix;
   }
   determinePath(adjMatrix) {
-    console.log(adjMatrix);
-    let pQueue = new PriorityQueue((a, b) => {
-      if (a.dist < b.dist) {
-        return -1;
-      } else if (a.dist > b.dist) {
-        return 1;
-      } else {
-        return 0;
-      }
-    });
-    let start = {
-      node: this.nodesList[0],
-      dist: 0,
-    };
-
-    pQueue.push(start);
-    for (let j = 0; j < this.nodesList.length - 1; j++) {
-      pQueue.push({
+    // let pQueue = new PriorityQueue((a, b) => {
+    //   if (a.dist < b.dist) {
+    //     return -1;
+    //   } else if (a.dist > b.dist) {
+    //     return 1;
+    //   } else {
+    //     return 0;
+    //   }
+    // });
+    console.log(this.nodesList[0]);
+    let path = [];
+    let distances = [];
+    path.push(this.nodesList[0]);
+    let currNode = 0;
+    console.log(path);
+    //while (1 !== 1) {
+    if (adjMatrix[currNode][this.nodesList.length - 1] === 0) {
+      path.push(this.nodesList[this.nodesList.length - 1]);
+      return path;
+    }
+    for (let j = 0; j < this.nodesList.length; j++) {
+      distances.push({
+        num: j,
         node: this.nodesList[j],
-        //set elevation to large number to simulate infinity
-        dist: 10000,
+        dist: adjMatrix[currNode][j],
+        visited: j === 0,
       });
     }
-    console.log(pQueue.pop());
-    console.log(pQueue.pop());
+    console.log(distances);
+    let minDistance = 10000;
+    let closestNode = null;
+    for (let j = 0; j < this.nodesList.length; j++) {
+      if (!distances[j].visited && distances[j].dist < minDistance) {
+        minDistance = distances[j].dist;
+        closestNode = distances[j].num;
+      }
+    }
+    currNode = closestNode;
+    distances[currNode].visited = true;
+    //update shortest paths if needed
+    for (let j = 0; j < this.nodesList.length; j++) {
+      if (
+        distances[j].dist >
+        distances[currNode].dist + adjMatrix[currNode][j]
+      ) {
+        distances[j].dist = distances[currNode].dist + adjMatrix[currNode][j];
+      }
+    }
+    //}
+    // let nodesList=[];
+    // for (let j = 0; j < this.nodesList.length - 1; j++) {
+    //     nodesList.push({
+    //       node: this.nodesList[j],
+    //       //set elevation to large number to simulate infinity
+    //       dist: adjMatrix[currNode][j]
+    //     });
+    //    }
+    // while(currNode!=this.nodesList.length-1){
+    // for (let j = 0; j < this.nodesList.length - 1; j++) {
+    //   pQueue.push({
+    //     node: this.nodesList[j],
+    //     //set elevation to large number to simulate infinity
+    //     dist: adjMatrix[currNode][j]
+    //   });
+    // }
+    //}
+
+    //console.log(pQueue.pop());
+    console.log(path);
     //run dijkstra to get shortest path with adjMatrix values
     //at each step check to make sure distance within x%
     //if exceeds x%, set all neighbors of current node to infinity in matrix
