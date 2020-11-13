@@ -113,13 +113,12 @@ export default class PathingService {
 
     // TODO pass in grid
     let nodesList = [
-      start,
+      this.start,
       new Location(41.5, -72, 0),
       new Location(42, -71.5, 500),
-      end,
+      this.end,
     ];
-    console.log(this.start);
-    let path = new Dijkstra(nodesList, this.start, this.end, true);
+    let path = new Dijkstra(nodesList, true);
     let matrix = path.createAdjacencyMatrix();
     path.determinePath(matrix);
 
@@ -190,11 +189,11 @@ function distance(start, end) {
 }
 
 class Dijkstra {
-  constructor(nodesList, start, end, elevation) {
+  constructor(nodesList, elevation) {
     this.nodesList = nodesList;
-    this.start = start;
-    this.end = end;
     this.elevation = elevation;
+    this.createAdjacencyMatrix = this.createAdjacencyMatrix.bind(this);
+    this.determinePath = this.determinePath.bind(this);
   }
   createAdjacencyMatrix() {
     let adjMatrix = [];
@@ -229,11 +228,29 @@ class Dijkstra {
   }
   determinePath(adjMatrix) {
     console.log(adjMatrix);
-    let pQueue = new PriorityQueue();
-    console.log(this.start);
-    pQueue.push(1);
-    pQueue.push(4);
+    let pQueue = new PriorityQueue((a, b) => {
+      if (a.dist < b.dist) {
+        return -1;
+      } else if (a.dist > b.dist) {
+        return 1;
+      } else {
+        return 0;
+      }
+    });
+    let start = {
+      node: this.nodesList[0],
+      dist: 0,
+    };
 
+    pQueue.push(start);
+    for (let j = 0; j < this.nodesList.length - 1; j++) {
+      pQueue.push({
+        node: this.nodesList[j],
+        //set elevation to large number to simulate infinity
+        dist: 10000,
+      });
+    }
+    console.log(pQueue.pop());
     console.log(pQueue.pop());
     //run dijkstra to get shortest path with adjMatrix values
     //at each step check to make sure distance within x%
@@ -255,4 +272,3 @@ let nodesList = [
 let path = new Dijkstra(nodesList, true);
 let matrix = path.createAdjacencyMatrix();
 path.determinePath(matrix);
-//console.log(distance);
