@@ -118,9 +118,9 @@ export default class PathingService {
       new Location(42, -71.5, 500),
       new Location(43, -76.5, 1000),
     ];
-    let path = new Dijkstra(nodesList, true);
+    let path = new Dijkstra(nodesList, true, this.start, this.end, 20);
     let matrix = path.createAdjacencyMatrix();
-    console.log('determine path');
+    console.log(this.start);
     path.determinePath(matrix);
 
     return d;
@@ -193,11 +193,33 @@ function distance(start, end) {
 //Not sure if I should change that
 //I am also assuming that we will never visit the same node twice
 class Dijkstra {
-  constructor(nodesList, elevation) {
+  constructor(nodesList, elevation, start, end, x) {
     this.nodesList = nodesList;
     this.elevation = elevation;
+    this.start = start;
+    this.end = end;
+    this.x = x;
     this.createAdjacencyMatrix = this.createAdjacencyMatrix.bind(this);
     this.determinePath = this.determinePath.bind(this);
+    this.distance = this.distance.bind(this);
+  }
+  distance(start, end) {
+    var lat1 = start.getLatitude();
+    var lon1 = start.getLongitude();
+    var lat2 = end.getLatitude();
+    var lon2 = end.getLongitude();
+    var R = 3958.8; // Radius of the earth in miles
+    var dLat = (lat2 - lat1) * (Math.PI / 180);
+    var dLon = (lon2 - lon1) * (Math.PI / 180);
+    var a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos((Math.PI / 180) * lat1) *
+        Math.cos((Math.PI / 180) * lat2) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
+    var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    var d = R * c; // Distance in miles
+    return d;
   }
   createAdjacencyMatrix() {
     let adjMatrix = [];
@@ -221,7 +243,7 @@ class Dijkstra {
     if (!this.elevation) {
       for (let j = 0; j < this.nodesList.length; j++) {
         for (let i = 0; i < this.nodesList.length; i++) {
-          if (adjMatrix[i][j] === 0) {
+          if (adjMatrix[i][j] !== 0) {
             adjMatrix[i][j] = 1 / adjMatrix[i][j];
           }
         }
@@ -229,6 +251,9 @@ class Dijkstra {
     }
     return adjMatrix;
   }
+  //run dijkstra to get shortest path with adjMatrix values
+  //at each step check to make sure distance within x%
+  //if exceeds x%, set all neighbors of current node to infinity in matrix
   determinePath(adjMatrix) {
     // let pQueue = new PriorityQueue((a, b) => {
     //   if (a.dist < b.dist) {
@@ -239,13 +264,16 @@ class Dijkstra {
     //     return 0;
     //   }
     // });
-    console.log(this.nodesList[0]);
+
+    let shortestDistance = this.distance(start, end);
+
+    let distancePlusX = shortestDistance * (1 + this.x / 100);
+    console.log(distancePlusX);
     let path = [];
     let distances = [];
     path.push(this.nodesList[0]);
     let currNode = 0;
-    console.log(path);
-    //while (1 !== 1) {
+    //while (currNode !== this.nodesList[this.nodesList.length - 1]) {
     if (adjMatrix[currNode][this.nodesList.length - 1] === 0) {
       path.push(this.nodesList[this.nodesList.length - 1]);
       return path;
@@ -279,14 +307,7 @@ class Dijkstra {
       }
     }
     //}
-    // let nodesList=[];
-    // for (let j = 0; j < this.nodesList.length - 1; j++) {
-    //     nodesList.push({
-    //       node: this.nodesList[j],
-    //       //set elevation to large number to simulate infinity
-    //       dist: adjMatrix[currNode][j]
-    //     });
-    //    }
+
     // while(currNode!=this.nodesList.length-1){
     // for (let j = 0; j < this.nodesList.length - 1; j++) {
     //   pQueue.push({
@@ -296,12 +317,8 @@ class Dijkstra {
     //   });
     // }
     //}
-
     //console.log(pQueue.pop());
     console.log(path);
-    //run dijkstra to get shortest path with adjMatrix values
-    //at each step check to make sure distance within x%
-    //if exceeds x%, set all neighbors of current node to infinity in matrix
   }
 }
 
