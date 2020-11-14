@@ -2,29 +2,22 @@ import React from 'react';
 import { Typography, FormControl, Input, InputLabel } from '@material-ui/core';
 import axios from 'axios';
 import PropTypes from 'prop-types';
+import {
+  getElevationURL,
+  getGeoDataURL,
+} from '../../Functions/NetworkingFunctions';
+import Location from '../../Functions/Location';
 
 class AddressInput extends React.Component {
   constructor(props) {
     super(props);
     this.handleFetchGeoData = this.handleFetchGeoData.bind(this);
-    this.getGeoDataURL = this.getGeoDataURL.bind(this);
-    this.getElevationURL = this.getElevationURL.bind(this);
     this.state = {
       address: '',
       fetchError: false,
       isLoading: true,
-      latitude: null,
-      longitude: null,
-      elevation: null,
+      location: null,
     };
-  }
-
-  getElevationURL(lat, lng) {
-    return `http://open.mapquestapi.com/elevation/v1/profile?key=${process.env.REACT_APP_MAPQUEST_API_KEY}&unit=f&shapeFormat=raw&latLngCollection=${lat},${lng}`;
-  }
-
-  getGeoDataURL(address) {
-    return `http://open.mapquestapi.com/geocoding/v1/address?key=${process.env.REACT_APP_MAPQUEST_API_KEY}&location=${address}`;
   }
 
   // Re-calls handleFetchGeoData only when shouldFetch changes (this is updated in the parent by incrementing it on button click)
@@ -39,36 +32,29 @@ class AddressInput extends React.Component {
     this.setState({
       isLoading: true,
       fetchError: false,
-      latitude: null,
-      longitude: null,
-      elevation: null,
+      location: null,
     });
     axios
-      .get(this.getGeoDataURL(this.state.address))
+      .get(getGeoDataURL(this.state.address))
       .then((resp) => {
         console.log('Response received');
         console.log(resp);
         try {
-          this.setState({
-            longitude: resp.data.results[0].locations[0].displayLatLng.lng,
-            latitude: resp.data.results[0].locations[0].displayLatLng.lat,
-          });
+          const longitude = resp.data.results[0].locations[0].displayLatLng.lng;
+          const latitude = resp.data.results[0].locations[0].displayLatLng.lat;
           axios
-            .get(
-              this.getElevationURL(
-                resp.data.results[0].locations[0].displayLatLng.lat,
-                resp.data.results[0].locations[0].displayLatLng.lng
-              )
-            )
+            .get(getElevationURL(longitude, latitude))
             .then((resp) => {
               console.log('Response received');
               console.log(resp);
               try {
+                const elevation = resp.data.elevationProfile[0].height;
+                const location = new Location(latitude, longitude, elevation);
                 this.setState({
-                  elevation: resp.data.elevationProfile[0].height,
                   isLoading: false,
+                  location: location,
                 });
-                this.props.setElevation(resp.data.elevationProfile[0].height);
+                this.props.setLocation(location);
               } catch (error) {
                 this.setState({
                   fetchError: true,
@@ -115,19 +101,19 @@ class AddressInput extends React.Component {
           Latitude:{' '}
           {this.state.fetchError || this.state.isLoading
             ? 'null'
-            : this.state.latitude}
+            : this.state.location.getLatitude()}
         </Typography>
         <Typography>
           Longitude:{' '}
           {this.state.fetchError || this.state.isLoading
             ? 'null'
-            : this.state.longitude}
+            : this.state.location.getLongitude()}
         </Typography>
         <Typography>
           Elevation:{' '}
           {this.state.fetchError || this.state.isLoading
             ? 'null'
-            : `${this.state.elevation} ft`}
+            : `${this.state.location.getElevation()} ft`}
         </Typography>
       </div>
     );
@@ -136,7 +122,7 @@ class AddressInput extends React.Component {
 
 AddressInput.propTypes = {
   shouldFetch: PropTypes.number,
-  setElevation: PropTypes.func,
+  setLocation: PropTypes.func,
   addressLabel: PropTypes.string,
 };
 
