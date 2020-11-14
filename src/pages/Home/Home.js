@@ -1,34 +1,29 @@
 import React, { Component } from 'react';
-import { Button, Typography } from '@material-ui/core';
-import GoogleMapReact from 'google-map-react';
-
- 
+import { Button, Typography, Grid } from '@material-ui/core';
+import Map from '../../Components/Map/Map'
 
 
 export default class Home extends React.Component {
 
-  static defaultProps = {
-    center: {lat: 59.95, lng: 30.33},
-    zoom: 11
-  };
 
   render() {
     return (
-      <div>
+      <Grid container>
+        <Grid item xs={3}>
         <Button variant="outlined" color="primary">
           Primary
         </Button>
         <Typography>Hello from Home.js</Typography>
 
-       {/* Important! Always set the container height explicitly */}
-       <div>
-        <GoogleMapReact
-          style={{}}
-          defaultCenter={this.props.center}
-          defaultZoom={this.props.zoom}
-          />
-      </div>
-      </div>
+        </Grid>
+      <Grid item xs={9}>
+      <Map location={{
+          address: '1600 Amphitheatre Parkway, Mountain View, california.',
+          lat: 37.42216,
+          lng: -122.08427,
+        }} zoomLevel={17} />
+      </Grid>
+      </Grid>
     );
   }
 }
