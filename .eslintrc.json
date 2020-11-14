@@ -1,6 +1,7 @@
 { // Visit https://eslint.org/docs/user-guide/configuring for more configuration settings
     "env": {
         "es6": true,
+<<<<<<< HEAD
         "node": true
     },
     "extends": [
@@ -11,6 +12,10 @@
     "globals": {
         "Atomics": "readonly",
         "SharedArrayBuffer": "readonly"
+=======
+        "browser": true,
+        "node": true
+>>>>>>> main
     },
     "parserOptions": {
         "ecmaFeatures": {
