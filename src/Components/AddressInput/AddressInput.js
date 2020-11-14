@@ -43,7 +43,7 @@ class AddressInput extends React.Component {
           const longitude = resp.data.results[0].locations[0].displayLatLng.lng;
           const latitude = resp.data.results[0].locations[0].displayLatLng.lat;
           axios
-            .get(getElevationURL(longitude, latitude))
+            .get(getElevationURL(latitude, longitude))
             .then((resp) => {
               console.log('Response received');
               console.log(resp);

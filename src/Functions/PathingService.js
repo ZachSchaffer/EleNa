@@ -30,10 +30,6 @@ export default class PathingService {
     this.end = location;
   }
 
-  containsValidLocations() {
-    return this.start !== null && this.end !== null;
-  }
-
   //create grid of location objects in the search area
   createGrid() {
     // 1 degree of latitude is 69 miles or 364k feet
