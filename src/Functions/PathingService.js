@@ -41,7 +41,7 @@ export default class PathingService {
 
     // calculates the accuracy
     // scales based on the flat distance between the two locations
-    var accuracy = 100 / Math.sqrt(latDif ** 2 + lngDif ** 2);
+    var accuracy = 24000 * Math.sqrt(latDif ** 2 + lngDif ** 2);
 
     // calculate distance between points and retrieve corners of the area
     var latVariation = latDif / ((latDif * FEET_IN_LAT_DEGREE) / accuracy); // convert to feet then get a point every <accuracy> feet
