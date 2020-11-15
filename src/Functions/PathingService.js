@@ -5,6 +5,7 @@ import axios from 'axios';
 
 const FEET_IN_LAT_DEGREE = 364000;
 const FEET_IN_LNG_DEGREE = 364434.53; // only for Amherst, MA
+const MAX_ELEVATION = 10000;
 
 export default class PathingService {
   constructor(start, end) {
@@ -110,6 +111,8 @@ export default class PathingService {
     //temporary code from https://stackoverflow.com/questions/27928/calculate-distance-between-two-latitude-longitude-points-haversine-formula?page=1&tab=votes
 
     // TODO pass in grid
+    let grid = this.createGrid();
+    console.log(grid);
     let nodesList = [
       this.start,
       new Location(41.5, -72, 0),
@@ -198,22 +201,11 @@ class Dijkstra {
     this.distance = this.distance.bind(this);
   }
   distance(start, end) {
-    var lat1 = start.getLatitude();
-    var lon1 = start.getLongitude();
-    var lat2 = end.getLatitude();
-    var lon2 = end.getLongitude();
-    var R = 3958.8; // Radius of the earth in miles
-    var dLat = (lat2 - lat1) * (Math.PI / 180);
-    var dLon = (lon2 - lon1) * (Math.PI / 180);
-    var a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos((Math.PI / 180) * lat1) *
-        Math.cos((Math.PI / 180) * lat2) *
-        Math.sin(dLon / 2) *
-        Math.sin(dLon / 2);
-    var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    var d = R * c; // Distance in miles
-    return d;
+    var latDif = Math.abs(start.getLatitude() - end.getLatitude());
+    var lngDif = Math.abs(start.getLongitude() - end.getLongitude());
+    var latFeet = latDif * FEET_IN_LAT_DEGREE;
+    var lngFeet = lngDif * FEET_IN_LNG_DEGREE;
+    return Math.sqrt(latFeet ** 2 + lngFeet ** 2); // Distance in miles
   }
   createAdjacencyMatrix() {
     let adjMatrix = [];
@@ -247,7 +239,7 @@ class Dijkstra {
   }
   //run dijkstra to get shortest path with adjMatrix values
   //at each step check to make sure distance within x%
-  //if exceeds x%, set all neighbors of current node to infinity in matrix
+  //if exceeds x%, set distance to that node to infinity in matrix and visited to true
   determinePath(adjMatrix) {
     // let pQueue = new PriorityQueue((a, b) => {
     //   if (a.dist < b.dist) {
@@ -288,7 +280,7 @@ class Dijkstra {
         };
       }
 
-      let minDistance = 10000;
+      let minDistance = MAX_ELEVATION;
       let closestNode = null;
       for (let j = 0; j < this.nodesList.length; j++) {
         if (!distances[j].visited && distances[j].dist < minDistance) {
@@ -310,7 +302,7 @@ class Dijkstra {
         distances[currNode].dist = minDistance;
       } else {
         distances[closestNode].visited = true;
-        distances[closestNode].dist = 10000;
+        distances[closestNode].dist = MAX_ELEVATION;
       }
       //update shortest paths if needed
       for (let j = 0; j < this.nodesList.length; j++) {
