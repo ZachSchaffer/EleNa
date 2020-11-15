@@ -12,6 +12,7 @@ export default class PathingService {
     this.end = end;
     this.createGrid = this.createGrid.bind(this);
     this.shortestPath = this.shortestPath.bind(this);
+    this.getStartCorner = this.getStartCorner.bind(this);
   }
 
   setStartLocation(location) {
@@ -41,13 +42,11 @@ export default class PathingService {
 
     // calculates the accuracy
     // scales based on the flat distance between the two locations
-    var accuracy = 24000 * Math.sqrt(latDif ** 2 + lngDif ** 2);
-
+    var accuracy = 30000 * Math.sqrt(latDif ** 2 + lngDif ** 2);
     // calculate distance between points and retrieve corners of the area
     var latVariation = latDif / ((latDif * FEET_IN_LAT_DEGREE) / accuracy); // convert to feet then get a point every <accuracy> feet
     var lngVariation = lngDif / ((lngDif * FEET_IN_LNG_DEGREE) / accuracy); // convert to feet then get a point every <accuracy> feet
-    var corners = this.getSearchArea(latDif, lngDif, 2);
-
+    var corners = this.getSearchArea(latDif, lngDif, 0);
     // fill latLngList with points within the area denoted by 'corners' equally spaced by
     // latVariation and lngVariation
     var latLngList = []; // stores  the latitude longitude points in the form [[lat1, lng1], [lat2, lng2], ...]
@@ -66,7 +65,6 @@ export default class PathingService {
     }
     // calculate number of rows to include in the grid
     var rows = latLngList.length / columns;
-
     // get the api url
     var elevationApiURL = getElevationURLMulti(latLngList);
 
@@ -132,39 +130,57 @@ export default class PathingService {
     var lng2 = this.end.getLongitude();
     var latCushion = (latDif * k) / 100; // latitude cushion of k%
     var lngCushion = (lngDif * k) / 100; // longitude cushion of k%
+    var corner = this.getStartCorner();
+    switch (corner) {
+      case 0:
+        // start in bottom right
+        return [
+          [lat1 - latCushion, lng1 + lngCushion], // bottom right
+          [lat2 + latCushion, lng1 + lngCushion], // top right
+          [lat1 - latCushion, lng2 - lngCushion], // bottom left
+          [lat2 + latCushion, lng2 - lngCushion], // top left
+        ];
+      case 1:
+        // start in bottom left
+        return [
+          [lat1 - latCushion, lng2 + lngCushion], // bottom right
+          [lat2 + latCushion, lng2 + lngCushion], // top right
+          [lat1 - latCushion, lng1 - lngCushion], // bottom left
+          [lat2 + latCushion, lng1 - lngCushion], // top left
+        ];
+      case 2:
+        // start in top right
+        return [
+          [lat2 - latCushion, lng1 + lngCushion], // bottom right
+          [lat1 + latCushion, lng1 + lngCushion], // top right
+          [lat2 - latCushion, lng2 - lngCushion], // bottom left
+          [lat1 + latCushion, lng2 - lngCushion], // top left
+        ];
+      default:
+        // start in top left
+        return [
+          [lat2 - latCushion, lng2 + lngCushion], // bottom right
+          [lat1 + latCushion, lng2 + lngCushion], // top right
+          [lat2 - latCushion, lng1 - lngCushion], // bottom left
+          [lat1 + latCushion, lng1 - lngCushion], // top left
+        ];
+    }
+  }
+  // Returns integer representing which corner has the starting location
+  getStartCorner() {
+    var lat1 = this.start.getLatitude();
+    var lng1 = this.start.getLongitude();
+    var lat2 = this.end.getLatitude();
+    var lng2 = this.end.getLongitude();
     if (lat1 <= lat2 && lng1 >= lng2) {
-      // start in bottom right
-      return [
-        [lat1 - latCushion, lng1 + lngCushion], // bottom right
-        [lat2 + latCushion, lng1 + lngCushion], // top right
-        [lat1 - latCushion, lng2 - lngCushion], // bottom left
-        [lat2 + latCushion, lng2 - lngCushion], // top left
-      ];
+      return 0; // bottom right
     } else if (lat1 <= lat2 && lng1 <= lng2) {
-      // start in bottom left
-      return [
-        [lat1 - latCushion, lng2 + lngCushion], // bottom right
-        [lat2 + latCushion, lng2 + lngCushion], // top right
-        [lat1 - latCushion, lng1 - lngCushion], // bottom left
-        [lat2 + latCushion, lng1 - lngCushion], // top left
-      ];
+      return 1; // bottom left
     } else if (lat1 >= lat2 && lng1 >= lng2) {
-      // start in top right
-      return [
-        [lat2 - latCushion, lng1 + lngCushion], // bottom right
-        [lat1 + latCushion, lng1 + lngCushion], // top right
-        [lat2 - latCushion, lng2 - lngCushion], // bottom left
-        [lat1 + latCushion, lng2 - lngCushion], // top left
-      ];
+      return 2; // top right
     }
     // lat1 >= lat2 && lng1 <= lng2
-    // start in top left
-    return [
-      [lat2 - latCushion, lng2 + lngCushion], // bottom right
-      [lat1 + latCushion, lng2 + lngCushion], // top right
-      [lat2 - latCushion, lng1 - lngCushion], // bottom left
-      [lat1 + latCushion, lng1 - lngCushion], // top left
-    ];
+    return 3; // top left
   }
 }
 
