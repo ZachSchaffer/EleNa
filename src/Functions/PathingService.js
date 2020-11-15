@@ -282,7 +282,6 @@ class Dijkstra {
     // });
     let shortestDistance = this.distance(start, end);
     let distancePlusX = shortestDistance * (1 + this.x / 100);
-    console.log(distancePlusX);
     let path = [];
     let distances = [];
     let pathToNode = [];
@@ -290,73 +289,75 @@ class Dijkstra {
       pathToNode.push(null);
       distances.push(null);
     }
-
+    let pathLength = 0;
     let currNode = 0;
     let pathSoFar = 0;
-    //while (currNode !== this.nodesList[this.nodesList.length - 1]) {
-    if (pathToNode[this.nodesList.length - 1] !== null) {
-      path.push(this.nodesList[this.nodesList.length - 1]);
-      let next = null;
-      while (next !== 0) {
-        path.push(this.nodesList[next]);
-        next = pathToNode[next];
+    //while (pathToNode[this.nodesList.length - 1] === null) {
+    for (let k = 0; k < 2; k++) {
+      if (pathLength >= 4) {
+        pathToNode[this.nodesList.length - 1] = currNode;
       }
-      path.push(this.nodesList[0]);
-    }
-    for (let j = 0; j < this.nodesList.length; j++) {
-      if (j === 1) {
-        console.log(j === 0);
-      }
-      distances[j] = {
-        num: j,
-        node: this.nodesList[j],
-        dist: adjMatrix[currNode][j],
-        visited: j === 0,
-      };
-      if (j === 1) {
-        console.log(distances[1]);
-        console.log(distances);
-      }
-    }
-    console.log('before update');
-    console.log(distances);
-    let minDistance = 10000;
-    let closestNode = null;
-    for (let j = 0; j < this.nodesList.length; j++) {
-      if (!distances[j].visited && distances[j].dist < minDistance) {
-        minDistance = distances[j].dist;
-        closestNode = distances[j].num;
-      }
-    }
-    console.log(typeof currNode);
-    console.log(typeof closestNode);
-    pathSoFar += distance(
-      this.nodesList[currNode],
-      this.nodesList[closestNode]
-    );
-    //if path is not already too long
-    if (pathSoFar < distancePlusX) {
-      pathToNode[closestNode] = currNode;
-      currNode = closestNode;
 
-      distances[currNode].visited = true;
+      for (let j = 0; j < this.nodesList.length; j++) {
+        distances[j] = {
+          num: j,
+          node: this.nodesList[j],
+          dist: adjMatrix[currNode][j],
+          visited: j === 0,
+        };
+      }
 
-      distances[currNode].dist = minDistance;
-    }
-    //update shortest paths if needed
-    for (let j = 0; j < this.nodesList.length; j++) {
-      if (
-        distances[j].dist >
-        distances[currNode].dist + adjMatrix[currNode][j]
-      ) {
-        //if path is not already too long
-        if (pathSoFar < distancePlusX) {
-          distances[j].dist = distances[currNode].dist + adjMatrix[currNode][j];
+      let minDistance = 10000;
+      let closestNode = null;
+      for (let j = 0; j < this.nodesList.length; j++) {
+        if (!distances[j].visited && distances[j].dist < minDistance) {
+          minDistance = distances[j].dist;
+          closestNode = distances[j].num;
         }
       }
+
+      pathSoFar += distance(
+        this.nodesList[currNode],
+        this.nodesList[closestNode]
+      );
+      //if path is not already too long
+      if (pathSoFar < distancePlusX) {
+        pathToNode[closestNode] = currNode;
+        currNode = closestNode;
+        pathLength += 1;
+
+        distances[currNode].visited = true;
+
+        distances[currNode].dist = minDistance;
+      } else {
+        distances[closestNode].visited = true;
+        distances[closestNode].dist = 10000;
+        //break;
+      }
+      //update shortest paths if needed
+      for (let j = 0; j < this.nodesList.length; j++) {
+        if (
+          distances[j].dist >
+          distances[currNode].dist + adjMatrix[currNode][j]
+        ) {
+          //if path is not already too long
+          if (pathSoFar < distancePlusX) {
+            distances[j].dist =
+              distances[currNode].dist + adjMatrix[currNode][j];
+          }
+        }
+      }
+      //}
+      if (pathToNode[this.nodesList.length - 1] !== null) {
+        path.push(this.nodesList[this.nodesList.length - 1]);
+        let next = pathToNode[this.nodesList.length - 1];
+        while (next !== 0) {
+          path.push(this.nodesList[next]);
+          next = pathToNode[next];
+        }
+        path.push(this.nodesList[0]);
+      }
     }
-    //}
-    console.log(path);
     return path;
 
     // for (let j = 0; j < this.nodesList.length - 1; j++) {
