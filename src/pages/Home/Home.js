@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button, Typography, Grid } from '@material-ui/core';
-import Map from '../../Components/MapView/MapView'
+import Map from '../../Components/MapView/MapView';
 import AddressInput from '../../Components/AddressInput/AddressInput';
 import PathingService from '../../Functions/PathingService';
 
@@ -59,7 +59,8 @@ class Home extends React.Component {
           </Button>
           <Button
             disabled={
-              this.state.startLocation === null && this.state.endLocation === null
+              this.state.startLocation === null &&
+              this.state.endLocation === null
             }
             onClick={this.pathingService.shortestPath}
             variant="outlined"
@@ -69,7 +70,8 @@ class Home extends React.Component {
           </Button>
           <Button
             disabled={
-              this.state.startLocation === null && this.state.endLocation === null
+              this.state.startLocation === null &&
+              this.state.endLocation === null
             }
             onClick={this.pathingService.createGrid}
             variant="outlined"
@@ -79,7 +81,7 @@ class Home extends React.Component {
           </Button>
         </Grid>
         <Grid item xs={9}>
-        <Map />
+          <Map markers={[this.state.startLocation, this.state.endLocation]} />
         </Grid>
       </Grid>
     );

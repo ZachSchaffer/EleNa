@@ -1,32 +1,49 @@
 import React, { Component } from 'react';
-import { Map, TileLayer } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css';
-import data from './data';
-import Markers from './VenueMarker';
+import ReactMapGL, { Marker } from 'react-map-gl';
+import RoomIcon from '@material-ui/icons/Room';
+import PropTypes from 'prop-types';
 
 class MapView extends Component {
   constructor(props) {
     super(props);
-    this.state = {
-      currentLocation: { lat: 52.52437, lng: 13.41053 },
+    this.viewport = {
+      width: '70vw',
+      height: '80vh',
+      latitude: 42.380368,
+      longitude: -72.523143,
       zoom: 12,
-    }
+    };
   }
 
   render() {
-    const { currentLocation, zoom } = this.state;
-
     return (
-      <Map center={currentLocation} zoom={zoom}>
-        <TileLayer
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution="&copy; <a href=&quot;http://osm.org/copyright&quot;>OpenStreetMap</a> contributors"
-        />
-
-        <Markers venues={data.venues}/>
-      </Map>
+      <ReactMapGL
+        {...this.viewport}
+        onViewportChange={(viewport) => this.setState({ viewport })}
+        mapStyle={`https://api.maptiler.com/maps/streets/style.json?key=${process.env.REACT_APP_MAPTILLER_API_KEY}`}
+        mapboxApiAccessToken={process.env.REACT_APP_MAPBOX_API_KEY}
+      >
+        {this.props.markers.map(
+          (marker) =>
+            marker && (
+              <Marker
+                key={marker.getLatitude()}
+                latitude={marker.getLatitude()}
+                longitude={marker.getLongitude()}
+                offsetLeft={-20}
+                offsetTop={-10}
+              >
+                <RoomIcon color="error" />
+              </Marker>
+            )
+        )}
+      </ReactMapGL>
     );
   }
 }
+
+MapView.propTypes = {
+  markers: PropTypes.array,
+};
 
 export default MapView;
