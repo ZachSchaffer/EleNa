@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button } from '@material-ui/core';
-import AddressInput from '../../Components/AddressInput/AddressInput';
+import AddressInput from '../../components/AddressInput/AddressInput';
 import PathingService from '../../Functions/PathingService';
 
 class Home extends React.Component {
