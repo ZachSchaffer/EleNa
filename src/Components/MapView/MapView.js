@@ -1,39 +1,85 @@
 import React, { Component } from 'react';
-import ReactMapGL, { Marker } from 'react-map-gl';
+import ReactMapGL, { Marker, ScaleControl } from 'react-map-gl';
 import RoomIcon from '@material-ui/icons/Room';
+import { Typography } from '@material-ui/core';
 import PropTypes from 'prop-types';
+import PolylineOverlay from '../PolylineOverlay/PolylineOverlay';
+import Location from '../../Functions/Location';
 
 class MapView extends Component {
   constructor(props) {
     super(props);
-    this.viewport = {
-      width: '70vw',
-      height: '80vh',
-      latitude: 42.380368,
-      longitude: -72.523143,
-      zoom: 12,
+    this.state = {
+      viewport: {
+        width: '80vw',
+        height: '92vh',
+        latitude: 42.380368,
+        longitude: -72.523143,
+        zoom: 12,
+      },
     };
+    this.colors = ['red', 'blue', 'green', 'yellow'];
+  }
+
+  getColor(start, end) {
+    if (start - end > 50) {
+      return 'green';
+    } else if (start - end < -50) {
+      return 'red';
+    } else {
+      return 'yellow';
+    }
   }
 
   render() {
+    const { viewport } = this.state;
+
     return (
       <ReactMapGL
-        {...this.viewport}
+        id="map"
+        {...viewport}
         onViewportChange={(viewport) => this.setState({ viewport })}
         mapStyle={`https://api.maptiler.com/maps/streets/style.json?key=${process.env.REACT_APP_MAPTILLER_API_KEY}`}
         mapboxApiAccessToken={process.env.REACT_APP_MAPBOX_API_KEY}
       >
+        <ScaleControl maxWidth={100} unit={'imperial'} />
         {this.props.markers.map(
-          (marker) =>
-            marker && (
+          (marker, index) =>
+            index !== 0 && (
+              <PolylineOverlay
+                color={this.getColor(
+                  this.props.markers[index - 1].getElevation(),
+                  this.props.markers[index].getElevation()
+                )}
+                key={index}
+                points={[
+                  [
+                    this.props.markers[index - 1].getLongitude(),
+                    this.props.markers[index - 1].getLatitude(),
+                  ],
+                  [
+                    this.props.markers[index].getLongitude(),
+                    this.props.markers[index].getLatitude(),
+                  ],
+                ]}
+              />
+            )
+        )}
+
+        {this.props.markers.map(
+          (marker, index) =>
+            (index === 0 || index === this.props.markers.length - 1) && (
               <Marker
-                key={marker.getLatitude()}
+                key={index}
                 latitude={marker.getLatitude()}
                 longitude={marker.getLongitude()}
-                offsetLeft={-20}
-                offsetTop={-10}
+                offsetTop={-32}
+                offsetLeft={-18}
               >
-                <RoomIcon color="error" />
+                <>
+                  <Typography>{index === 0 ? 'Start' : 'End'}</Typography>
+                  <RoomIcon style={{ fontSize: '36px' }} color="error" />
+                </>
               </Marker>
             )
         )}
@@ -41,6 +87,14 @@ class MapView extends Component {
     );
   }
 }
+MapView.defaultProps = {
+  markers: [
+    new Location(42.396242, -72.512482, 357.61),
+    new Location(43.396242, -74.512482, 500.61),
+    new Location(46.396242, -74.512482, 490.61),
+    new Location(45.396242, -76.512482, 357.61),
+  ],
+};
 
 MapView.propTypes = {
   markers: PropTypes.array,
