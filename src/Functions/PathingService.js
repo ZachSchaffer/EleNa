@@ -110,22 +110,6 @@ export default class PathingService {
   //calculate the shortest path between 2 points in miles
   shortestPath() {
     //temporary code from https://stackoverflow.com/questions/27928/calculate-distance-between-two-latitude-longitude-points-haversine-formula?page=1&tab=votes
-    console.log(this.start.getLongitude());
-    var lat1 = this.start.getLatitude();
-    var lon1 = this.start.getLongitude();
-    var lat2 = this.end.getLatitude();
-    var lon2 = this.end.getLongitude();
-    var R = 3958.8; // Radius of the earth in miles
-    var dLat = (lat2 - lat1) * (Math.PI / 180);
-    var dLon = (lon2 - lon1) * (Math.PI / 180);
-    var a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos((Math.PI / 180) * lat1) *
-        Math.cos((Math.PI / 180) * lat2) *
-        Math.sin(dLon / 2) *
-        Math.sin(dLon / 2);
-    var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    var d = R * c; // Distance in miles
 
     // TODO pass in grid
     let nodesList = [
@@ -138,8 +122,6 @@ export default class PathingService {
     let matrix = path.createAdjacencyMatrix();
     console.log(this.start);
     path.determinePath(matrix);
-
-    return d;
   }
 
   //calculate the search area within K % of the shortest path
@@ -186,27 +168,7 @@ export default class PathingService {
   }
 }
 
-function distance(start, end) {
-  var lat1 = start.getLatitude();
-  var lon1 = start.getLongitude();
-  var lat2 = end.getLatitude();
-  var lon2 = end.getLongitude();
-  var R = 3958.8; // Radius of the earth in miles
-  var dLat = (lat2 - lat1) * (Math.PI / 180);
-  var dLon = (lon2 - lon1) * (Math.PI / 180);
-  var a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos((Math.PI / 180) * lat1) *
-      Math.cos((Math.PI / 180) * lat2) *
-      Math.sin(dLon / 2) *
-      Math.sin(dLon / 2);
-  var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  var d = R * c; // Distance in miles
-  return d;
-}
-
 //TODO I am assuming that the first node in the grid is the start and the last node is the end.
-//Not sure if I should change that
 //I am also assuming that we will never visit the same node twice
 class Dijkstra {
   constructor(nodesList, elevation, start, end, x) {
@@ -280,7 +242,10 @@ class Dijkstra {
     //     return 0;
     //   }
     // });
-    let shortestDistance = this.distance(start, end);
+    let shortestDistance = this.distance(
+      this.nodesList[0],
+      this.nodesList[this.nodesList.length - 1]
+    );
     let distancePlusX = shortestDistance * (1 + this.x / 100);
     let path = [];
     let distances = [];
@@ -293,7 +258,7 @@ class Dijkstra {
     let currNode = 0;
     let pathSoFar = 0;
     //while (pathToNode[this.nodesList.length - 1] === null) {
-    for (let k = 0; k < 2; k++) {
+    for (let k = 0; k < 5; k++) {
       if (pathLength >= 4) {
         pathToNode[this.nodesList.length - 1] = currNode;
       }
@@ -316,7 +281,7 @@ class Dijkstra {
         }
       }
 
-      pathSoFar += distance(
+      pathSoFar += this.distance(
         this.nodesList[currNode],
         this.nodesList[closestNode]
       );
@@ -325,14 +290,11 @@ class Dijkstra {
         pathToNode[closestNode] = currNode;
         currNode = closestNode;
         pathLength += 1;
-
         distances[currNode].visited = true;
-
         distances[currNode].dist = minDistance;
       } else {
         distances[closestNode].visited = true;
         distances[closestNode].dist = 10000;
-        //break;
       }
       //update shortest paths if needed
       for (let j = 0; j < this.nodesList.length; j++) {
@@ -347,17 +309,18 @@ class Dijkstra {
           }
         }
       }
-      //}
-      if (pathToNode[this.nodesList.length - 1] !== null) {
-        path.push(this.nodesList[this.nodesList.length - 1]);
-        let next = pathToNode[this.nodesList.length - 1];
-        while (next !== 0) {
-          path.push(this.nodesList[next]);
-          next = pathToNode[next];
-        }
-        path.push(this.nodesList[0]);
-      }
     }
+    if (pathToNode[this.nodesList.length - 1] !== null) {
+      path.push(this.nodesList[this.nodesList.length - 1]);
+      let next = pathToNode[this.nodesList.length - 1];
+      console.log(next);
+      // while (next !== 0) {
+      //   path.push(this.nodesList[next]);
+      //   next = pathToNode[next];
+      // }
+      path.push(this.nodesList[0]);
+    }
+    //}
     return path;
 
     // for (let j = 0; j < this.nodesList.length - 1; j++) {
@@ -370,18 +333,3 @@ class Dijkstra {
     //console.log(pQueue.pop());
   }
 }
-
-let start = new Location(42.380368, -72.523143, 288.71);
-let end = new Location(41, -71, 88);
-let alg = new PathingService(start, end);
-alg.shortestPath();
-distance(start, end);
-let nodesList = [
-  start,
-  new Location(41.5, -72, 0),
-  new Location(42, -71.5, 500),
-  end,
-];
-let path = new Dijkstra(nodesList, true);
-let matrix = path.createAdjacencyMatrix();
-path.determinePath(matrix);
