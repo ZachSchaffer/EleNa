@@ -14,6 +14,7 @@ export default class PathingService {
     this.createGrid = this.createGrid.bind(this);
     this.shortestPath = this.shortestPath.bind(this);
     this.getStartCorner = this.getStartCorner.bind(this);
+    this.getCreateGrid = this.getCreateGrid.bind(this);
   }
 
   setStartLocation(location) {
@@ -32,8 +33,13 @@ export default class PathingService {
     this.end = location;
   }
 
+  async getCreateGrid() {
+    var grid = await this.createGrid();
+    console.log(grid);
+  }
+
   //create grid of location objects in the search area
-  createGrid() {
+  async createGrid() {
     // 1 degree of latitude is 69 miles or 364k feet
     var grid = []; // grid to fill with Location objects
 
@@ -70,15 +76,19 @@ export default class PathingService {
     //var rows = latLngPayload["locations"].length / columns;
     var rows = latLngList.length / columns;
 
+    console.log(rows);
+    console.log(columns);
+    console.log(latLngList.length);
+
     // get the api url
     var elevationApiURL = getElevationURLAirMapMulti(latLngList);
 
     // make API call with list of latitude/longitude points
-    axios
+    await axios
       .get(elevationApiURL)
       .then((resp) => {
-        console.log('Response received');
-        console.log(resp);
+        //console.log('Response received');
+        //console.log(resp);
         try {
           // fill the grid
           for (var i = 0; i < latLngList.length; i++) {
@@ -98,7 +108,7 @@ export default class PathingService {
             // add the location to the grid
             grid[row].push(loc);
           }
-          console.log(grid);
+          //console.log(grid);
         } catch (error) {
           console.error(
             `Error: ${error}. Error extracting elevation. Ensure a valid address was input`
@@ -108,6 +118,7 @@ export default class PathingService {
       .catch((err) => {
         console.error(`Fetch failed with error ${err.message}`);
       });
+    return grid;
   }
 
   //calculate the shortest path between 2 points in miles

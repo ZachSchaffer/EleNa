@@ -69,7 +69,7 @@ class Home extends React.Component {
           disabled={
             this.state.startLocation === null && this.state.endLocation === null
           }
-          onClick={this.pathingService.createGrid}
+          onClick={this.pathingService.getCreateGrid}
           variant="outlined"
           color="primary"
         >
