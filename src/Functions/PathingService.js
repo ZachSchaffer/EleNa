@@ -1,5 +1,5 @@
 //import PriorityQueue from 'priorityqueue';
-import { getElevationURLMulti } from '../Functions/NetworkingFunctions';
+import { getElevationURLAirMapMulti } from '../Functions/NetworkingFunctions';
 import Location from './Location';
 import axios from 'axios';
 
@@ -43,11 +43,13 @@ export default class PathingService {
 
     // calculates the accuracy
     // scales based on the flat distance between the two locations
-    var accuracy = 30000 * Math.sqrt(latDif ** 2 + lngDif ** 2);
+    var accuracy = 27000 * Math.sqrt(latDif ** 2 + lngDif ** 2);
+
     // calculate distance between points and retrieve corners of the area
     var latVariation = latDif / ((latDif * FEET_IN_LAT_DEGREE) / accuracy); // convert to feet then get a point every <accuracy> feet
     var lngVariation = lngDif / ((lngDif * FEET_IN_LNG_DEGREE) / accuracy); // convert to feet then get a point every <accuracy> feet
     var corners = this.getSearchArea(latDif, lngDif, 0);
+
     // fill latLngList with points within the area denoted by 'corners' equally spaced by
     // latVariation and lngVariation
     var latLngList = []; // stores  the latitude longitude points in the form [[lat1, lng1], [lat2, lng2], ...]
@@ -65,9 +67,11 @@ export default class PathingService {
       currLatValue -= latVariation;
     }
     // calculate number of rows to include in the grid
+    //var rows = latLngPayload["locations"].length / columns;
     var rows = latLngList.length / columns;
+
     // get the api url
-    var elevationApiURL = getElevationURLMulti(latLngList);
+    var elevationApiURL = getElevationURLAirMapMulti(latLngList);
 
     // make API call with list of latitude/longitude points
     axios
@@ -82,7 +86,7 @@ export default class PathingService {
             var loc = new Location(
               latLngList[i][0],
               latLngList[i][1],
-              resp.data.elevationProfile[i].height
+              resp.data.data[i]
             );
 
             // get the row index
