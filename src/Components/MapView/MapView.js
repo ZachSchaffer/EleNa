@@ -11,7 +11,7 @@ class MapView extends Component {
     super(props);
     this.state = {
       viewport: {
-        width: '80vw',
+        width: '79vw',
         height: '92vh',
         latitude: 42.380368,
         longitude: -72.523143,
