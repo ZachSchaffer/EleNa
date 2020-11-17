@@ -123,20 +123,47 @@ export default class PathingService {
 
   //calculate the path between 2 points
   async shortestPath() {
-    //TODO use corner value to put start node first and endNode last
     let grid = await this.createGrid();
     console.log(grid);
     let corner = this.getStartCorner();
-    console.log(corner);
     let size = grid.length;
     console.log(size);
-
+    let temp = null;
+    switch (corner) {
+      //bottom right
+      case 0:
+        temp = grid[0][0];
+        grid[0][0] = grid[size - 1][size - 1];
+        grid[size - 1][size - 1] = temp;
+        break;
+      //bottom left
+      case 1:
+        temp = grid[size - 1][0];
+        grid[size - 1][0] = grid[0][size - 1];
+        grid[0][size - 1] = temp;
+        break;
+      //top right
+      case 2:
+        temp = grid[0][size - 1];
+        grid[0][size - 1] = grid[size - 1][0];
+        grid[size - 1][0] = temp;
+        break;
+      //top left
+      default:
+        temp = grid[0][0];
+    }
     // let nodesList = [
     //   this.start,
     //   new Location(41.5, -72, 0),
     //   new Location(42, -71.5, 500),
     //   new Location(43, -76.5, 1000),
     // ];
+    //turn grid into 1d array
+    let flatGrid = [];
+    for (let i = 0; i < grid.length; i++) {
+      flatGrid = flatGrid.concat(grid[i]);
+    }
+    //TODO pass in full grid
     let path = new Dijkstra(grid[0], true, 20);
     let matrix = path.createAdjacencyMatrix();
     console.log(this.start);
