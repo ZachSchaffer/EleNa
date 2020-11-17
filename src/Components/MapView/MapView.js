@@ -4,7 +4,7 @@ import RoomIcon from '@material-ui/icons/Room';
 import { Typography } from '@material-ui/core';
 import PropTypes from 'prop-types';
 import PolylineOverlay from '../PolylineOverlay/PolylineOverlay';
-import Location from '../../Functions/Location';
+//import Location from '../../Functions/Location';
 
 class MapView extends Component {
   constructor(props) {
@@ -18,9 +18,9 @@ class MapView extends Component {
         zoom: 12,
       },
     };
-    this.colors = ['red', 'blue', 'green', 'yellow'];
   }
 
+  // TODO: play around with the numbers on this and increase color range
   getColor(start, end) {
     if (start - end > 50) {
       return 'green';
@@ -89,10 +89,10 @@ class MapView extends Component {
 }
 MapView.defaultProps = {
   markers: [
-    new Location(42.396242, -72.512482, 357.61),
+    /*new Location(42.396242, -72.512482, 357.61),
     new Location(43.396242, -74.512482, 500.61),
     new Location(46.396242, -74.512482, 490.61),
-    new Location(45.396242, -76.512482, 357.61),
+    new Location(45.396242, -76.512482, 357.61),*/
   ],
 };
 

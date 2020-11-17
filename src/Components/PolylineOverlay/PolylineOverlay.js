@@ -14,8 +14,6 @@ export default class PolylineOverlay extends PureComponent {
     ctx.clearRect(0, 0, width, height);
     ctx.globalCompositeOperation = 'lighter';
 
-    console.log('color', points);
-
     if ((renderWhileDragging || !isDragging) && points) {
       ctx.lineWidth = lineWidth;
       ctx.strokeStyle = color;
