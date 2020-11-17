@@ -80,8 +80,6 @@ class Home extends React.Component {
           >
             Test Dijkstra
           </Button>
-          <br />
-          <br />
           <Button
             disabled={
               this.state.startLocation === null &&
