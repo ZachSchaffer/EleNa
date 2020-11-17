@@ -92,7 +92,7 @@ class Home extends React.Component {
             Test Create Grid
           </Button>
         </div>
-        <div style={{ float: 'left' }}>
+        <div style={{ float: 'left', width: '80vw' }}>
           {this.state.startLocation && this.state.endLocation ? (
             <Map markers={[this.state.startLocation, this.state.endLocation]} />
           ) : (
