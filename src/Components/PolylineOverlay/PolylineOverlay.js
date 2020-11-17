@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 
 // This helper class was found here: https://github.com/visgl/react-map-gl/issues/591
 export default class PolylineOverlay extends PureComponent {
-  _redraw({ width, height, ctx, isDragging, project, unproject }) {
+  _redraw({ width, height, ctx, isDragging, project }) {
     const {
       points,
       color = 'red',
