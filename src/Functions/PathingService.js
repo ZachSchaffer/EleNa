@@ -121,20 +121,23 @@ export default class PathingService {
     return grid;
   }
 
-  //calculate the shortest path between 2 points in miles
-  shortestPath() {
-    //temporary code from https://stackoverflow.com/questions/27928/calculate-distance-between-two-latitude-longitude-points-haversine-formula?page=1&tab=votes
-
-    // TODO pass in grid
-    let grid = this.createGrid();
+  //calculate the path between 2 points
+  async shortestPath() {
+    //TODO use corner value to put start node first and endNode last
+    let grid = await this.createGrid();
     console.log(grid);
-    let nodesList = [
-      this.start,
-      new Location(41.5, -72, 0),
-      new Location(42, -71.5, 500),
-      new Location(43, -76.5, 1000),
-    ];
-    let path = new Dijkstra(nodesList, true, this.start, this.end, 20);
+    let corner = this.getStartCorner();
+    console.log(corner);
+    let size = grid.length;
+    console.log(size);
+
+    // let nodesList = [
+    //   this.start,
+    //   new Location(41.5, -72, 0),
+    //   new Location(42, -71.5, 500),
+    //   new Location(43, -76.5, 1000),
+    // ];
+    let path = new Dijkstra(grid[0], true, 20);
     let matrix = path.createAdjacencyMatrix();
     console.log(this.start);
     path.determinePath(matrix);
@@ -202,14 +205,11 @@ export default class PathingService {
   }
 }
 
-//TODO I am assuming that the first node in the grid is the start and the last node is the end.
 //I am also assuming that we will never visit the same node twice
 class Dijkstra {
-  constructor(nodesList, elevation, start, end, x) {
+  constructor(nodesList, elevation, x) {
     this.nodesList = nodesList;
     this.elevation = elevation;
-    this.start = start;
-    this.end = end;
     this.x = x;
     this.createAdjacencyMatrix = this.createAdjacencyMatrix.bind(this);
     this.determinePath = this.determinePath.bind(this);
@@ -239,7 +239,6 @@ class Dijkstra {
       }
       adjMatrix.push(elevationDiff);
     }
-
     //if we want to maximize instead of minimize, set elevation to 1/elevation
     if (!this.elevation) {
       for (let j = 0; j < this.nodesList.length; j++) {
@@ -285,7 +284,6 @@ class Dijkstra {
       if (pathLength >= 4) {
         pathToNode[this.nodesList.length - 1] = currNode;
       }
-
       for (let j = 0; j < this.nodesList.length; j++) {
         distances[j] = {
           num: j,
@@ -294,7 +292,6 @@ class Dijkstra {
           visited: j === 0,
         };
       }
-
       let minDistance = MAX_ELEVATION;
       let closestNode = null;
       for (let j = 0; j < this.nodesList.length; j++) {
@@ -303,7 +300,6 @@ class Dijkstra {
           closestNode = distances[j].num;
         }
       }
-
       pathSoFar += this.distance(
         this.nodesList[currNode],
         this.nodesList[closestNode]
@@ -345,7 +341,6 @@ class Dijkstra {
     }
     //}
     return path;
-
     // for (let j = 0; j < this.nodesList.length - 1; j++) {
     //   pQueue.push({
     //     node: this.nodesList[j],
