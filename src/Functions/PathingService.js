@@ -163,8 +163,7 @@ export default class PathingService {
     for (let i = 0; i < grid.length; i++) {
       flatGrid = flatGrid.concat(grid[i]);
     }
-    //TODO pass in full grid
-    let path = new Dijkstra(grid[0], true, 20);
+    let path = new Dijkstra(flatGrid, true, 20);
     let matrix = path.createAdjacencyMatrix();
     console.log(this.start);
     path.determinePath(matrix);
@@ -232,7 +231,7 @@ export default class PathingService {
   }
 }
 
-//I am also assuming that we will never visit the same node twice
+//I am assuming that we will never visit the same node twice
 class Dijkstra {
   constructor(nodesList, elevation, x) {
     this.nodesList = nodesList;
@@ -303,22 +302,19 @@ class Dijkstra {
       pathToNode.push(null);
       distances.push(null);
     }
-    let pathLength = 0;
+    for (let j = 0; j < this.nodesList.length; j++) {
+      distances[j] = {
+        num: j,
+        node: this.nodesList[j],
+        dist: adjMatrix[0][j],
+        visited: j === 0,
+      };
+    }
+    let pathLength = 1;
     let currNode = 0;
     let pathSoFar = 0;
     //while (pathToNode[this.nodesList.length - 1] === null) {
     for (let k = 0; k < 5; k++) {
-      if (pathLength >= 4) {
-        pathToNode[this.nodesList.length - 1] = currNode;
-      }
-      for (let j = 0; j < this.nodesList.length; j++) {
-        distances[j] = {
-          num: j,
-          node: this.nodesList[j],
-          dist: adjMatrix[currNode][j],
-          visited: j === 0,
-        };
-      }
       let minDistance = MAX_ELEVATION;
       let closestNode = null;
       for (let j = 0; j < this.nodesList.length; j++) {
@@ -356,17 +352,20 @@ class Dijkstra {
         }
       }
     }
+    if (pathLength > 4) {
+      pathToNode[this.nodesList.length - 1] = currNode;
+    }
     if (pathToNode[this.nodesList.length - 1] !== null) {
       path.push(this.nodesList[this.nodesList.length - 1]);
       let next = pathToNode[this.nodesList.length - 1];
-      console.log(next);
-      // while (next !== 0) {
-      //   path.push(this.nodesList[next]);
-      //   next = pathToNode[next];
-      // }
+      while (next !== 0) {
+        path.push(this.nodesList[next]);
+        next = pathToNode[next];
+      }
       path.push(this.nodesList[0]);
     }
     //}
+    console.log(path);
     return path;
     // for (let j = 0; j < this.nodesList.length - 1; j++) {
     //   pQueue.push({
