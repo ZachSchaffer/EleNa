@@ -139,14 +139,20 @@ export default class PathingService {
       //bottom left
       case 1:
         temp = grid[size - 1][0];
-        grid[size - 1][0] = grid[0][size - 1];
-        grid[0][size - 1] = temp;
+        grid[size - 1][0] = grid[0][0];
+        grid[0][0] = temp;
+        temp = grid[0][size - 1];
+        grid[0][size - 1] = grid[size - 1][size - 1];
+        grid[size - 1][size - 1] = temp;
         break;
       //top right
       case 2:
         temp = grid[0][size - 1];
-        grid[0][size - 1] = grid[size - 1][0];
-        grid[size - 1][0] = temp;
+        grid[0][size - 1] = grid[0][0];
+        grid[0][0] = temp;
+        temp = grid[size - 1][0];
+        grid[size - 1][0] = grid[size - 1][size - 1];
+        grid[size - 1][size - 1] = temp;
         break;
       //top left
       default:
