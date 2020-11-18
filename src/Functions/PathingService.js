@@ -313,14 +313,13 @@ class Dijkstra {
         num: j,
         node: this.nodesList[j],
         dist: adjMatrix[0][j],
-        visited: j === 0,
+        visited: j === 0 || this.nodesList[j].elevation === null,
       };
     }
-    let pathLength = 1;
     let currNode = 0;
     let pathSoFar = 0;
     //while (pathToNode[this.nodesList.length - 1] === null) {
-    for (let k = 0; k < 5; k++) {
+    for (let k = 0; k < 10; k++) {
       let minDistance = MAX_ELEVATION;
       let closestNode = null;
       for (let j = 0; j < this.nodesList.length; j++) {
@@ -337,7 +336,6 @@ class Dijkstra {
       if (pathSoFar < distancePlusX) {
         pathToNode[closestNode] = currNode;
         currNode = closestNode;
-        pathLength += 1;
         distances[currNode].visited = true;
         distances[currNode].dist = minDistance;
       } else {
@@ -357,10 +355,11 @@ class Dijkstra {
           }
         }
       }
+      if (k === 9 && pathToNode[this.nodesList.length - 1] === null) {
+        pathToNode[this.nodesList.length - 1] = currNode;
+      }
     }
-    if (pathLength > 4) {
-      pathToNode[this.nodesList.length - 1] = currNode;
-    }
+
     if (pathToNode[this.nodesList.length - 1] !== null) {
       path.push(this.nodesList[this.nodesList.length - 1]);
       let next = pathToNode[this.nodesList.length - 1];
