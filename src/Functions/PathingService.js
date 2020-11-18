@@ -52,8 +52,8 @@ export default class PathingService {
     var accuracy = 27000 * Math.sqrt(latDif ** 2 + lngDif ** 2);
 
     // calculate distance between points and retrieve corners of the area
-    var latVariation = latDif / ((latDif * FEET_IN_LAT_DEGREE) / accuracy); // convert to feet then get a point every <accuracy> feet
-    var lngVariation = lngDif / ((lngDif * FEET_IN_LNG_DEGREE) / accuracy); // convert to feet then get a point every <accuracy> feet
+    var latVariation = latDif / Math.floor((latDif * FEET_IN_LAT_DEGREE) / accuracy); // convert to feet then get a point every <accuracy> feet
+    var lngVariation = lngDif / Math.floor((lngDif * FEET_IN_LNG_DEGREE) / accuracy); // convert to feet then get a point every <accuracy> feet
     var corners = this.getSearchArea(latDif, lngDif, 0);
 
     // fill latLngList with points within the area denoted by 'corners' equally spaced by
