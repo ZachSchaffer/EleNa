@@ -1,38 +1,60 @@
 import React from 'react';
-import { Button } from '@material-ui/core';
+import { Button, CircularProgress, FormControl, InputLabel, Input, Typography } from '@material-ui/core';
 import Map from '../../Components/MapView/MapView';
-import AddressInput from '../../Components/AddressInput/AddressInput';
 import PathingService from '../../Functions/PathingService';
+import {
+  handleFetchGeoData
+} from '../../Functions/NetworkingFunctions';
 
 class Home extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      shouldFetch: 0,
-      startLocation: null, //new Location(42.396242, -72.512482, 357.61),
-      endLocation: null, //new Location(42.389363, -72.519103, 367.45),
+      componentIsLoading: false,
+      startAddress: null,
+      endAddress: null,
       path: []
     };
 
     this.pathingService = new PathingService(null, null);
   }
 
-  setStartLocation(location) {
-    this.setState({ startLocation: location });
-    this.pathingService.setStartLocation(location);
+  getElevationGain() {
+    if (this.state.path === 0) {
+      return '';
+    }
+    let gain = 0;
+    let loss = 0;
+    this.state.path && this.state.path.map((location, index) => {
+      if(index!==0){
+        let diff = this.state.path[index-1].getElevation() - location.getElevation();
+        if(diff > 0){
+          loss += Math.abs(diff);
+        } else {
+          gain += Math.abs(diff);
+        }
+      }
+    });
+    return <>
+      <Typography>{`Incline: ${gain} feet`}</Typography> 
+      <br />
+      <Typography>{`Decline: ${loss} feet`}</Typography></>;
   }
 
-  async setPath(path) {
-    console.log(this.setState({path: await path}));
+  async computePath(){
+    this.setState({componentIsLoading: true});
+    const startLocation = await handleFetchGeoData(this.state.startAddress);
+    const endLocation = await handleFetchGeoData(this.state.endAddress);
+    console.log(startLocation, endLocation);
+    if(!startLocation || !endLocation || (startLocation === endLocation)) {
+      return;
+    }
+    this.pathingService.setStartLocation(startLocation);
+    this.pathingService.setEndLocation(endLocation);
+    this.setState({path: await this.pathingService.shortestPath()});
+    this.setState({componentIsLoading: false});
   }
-
-  setEndLocation(location) {
-    this.setState({ endLocation: location });
-    this.pathingService.setEndLocation(location);
-  }
-
-  computePath() {}
-
+  
   render() {
 
     return (
@@ -48,52 +70,58 @@ class Home extends React.Component {
         >
           <br />
           <br />
-          <AddressInput
-            shouldFetch={this.state.shouldFetch}
-            setLocation={this.setStartLocation.bind(this)}
-            addressLabel="Starting Address"
-            inputID="Starting Input"
-          />
+          <FormControl>
+            <InputLabel>Starting Address</InputLabel>
+            <Input
+              aria-describedby='starting-address'
+              onChange={(e) => this.setState({ startAddress: e.target.value })}
+            />
+          </FormControl>
           <br />
-          <AddressInput
-            shouldFetch={this.state.shouldFetch}
-            setLocation={this.setEndLocation.bind(this)}
-            addressLabel="Ending Address"
-            inputID="Ending Input"
-          />
+          <br />
+          <FormControl>
+            <InputLabel>Ending Address</InputLabel>
+            <Input
+              aria-describedby='ending-address'
+              onChange={(e) => this.setState({ endAddress: e.target.value })}
+            />
+          </FormControl>
+          <br />
           <br />
           <Button
             onClick={() =>
-              this.setState({
-                shouldFetch: this.state.shouldFetch + 1,
-              })
+              this.computePath()
             }
+            disabled={(this.state.startAddress === this.state.endAddress) || !this.state.startAddress || !this.state.endAddress}
             variant="contained"
             color="primary"
             aria-label="Fetch data for start and end address"
           >
-            Fetch Data
+            Compute Path
           </Button>
           <br />
           <br />
-          <Button
-          disabled={
-            this.state.startLocation === null && this.state.endLocation === null
-          }
-          onClick={() => this.setPath(this.pathingService.shortestPath())}
-          variant="outlined"
-          color="primary"
-        >
-          Test Dijkstra
-        </Button>
+          {this.getElevationGain()}
         </div>
-        <div style={{ float: 'right', width: '79vw' }}>
-          {this.state.startLocation && this.state.endLocation ? (
+        <div style={{ 
+            float: 'right', 
+            width: '79vw', 
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center' 
+        }}>
+          {!this.state.componentIsLoading ? (
             <Map markers={this.state.path} />
           ) : (
-            <Map />
+            <>
+            <br />
+            <br />
+            <br />
+            <CircularProgress align='center' color="inherit" size='10em'/>
+            </>
           )}
         </div>
+        
       </div>
     );
   }

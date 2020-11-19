@@ -52,8 +52,10 @@ export default class PathingService {
     var accuracy = 27000 * Math.sqrt(latDif ** 2 + lngDif ** 2);
 
     // calculate distance between points and retrieve corners of the area
-    var latVariation = latDif / Math.floor((latDif * FEET_IN_LAT_DEGREE) / accuracy); // convert to feet then get a point every <accuracy> feet
-    var lngVariation = lngDif / Math.floor((lngDif * FEET_IN_LNG_DEGREE) / accuracy); // convert to feet then get a point every <accuracy> feet
+    var latVariation =
+      latDif / Math.floor((latDif * FEET_IN_LAT_DEGREE) / accuracy); // convert to feet then get a point every <accuracy> feet
+    var lngVariation =
+      lngDif / Math.floor((lngDif * FEET_IN_LNG_DEGREE) / accuracy); // convert to feet then get a point every <accuracy> feet
     var corners = this.getSearchArea(latDif, lngDif, 0);
 
     // fill latLngList with points within the area denoted by 'corners' equally spaced by
@@ -327,13 +329,13 @@ class Dijkstra {
     for (let k = 0; k < 10; k++) {
       let minDistance = MAX_ELEVATION;
       let closestNode = null;
-      for (let j = this.nodesList.length-1;j>=0; j--) {
+      for (let j = this.nodesList.length - 1; j >= 0; j--) {
         if (!distances[j].visited && distances[j].dist < minDistance) {
           minDistance = distances[j].dist;
           closestNode = distances[j].num;
         }
       }
-      
+
       pathSoFar += this.distance(
         this.nodesList[currNode],
         this.nodesList[closestNode]
@@ -377,7 +379,7 @@ class Dijkstra {
     }
     //}
     let pathToReturn = [];
-    for(let i =path.length-1;i>=0;i--){
+    for (let i = path.length - 1; i >= 0; i--) {
       pathToReturn.push(path[i]);
     }
     console.log(pathToReturn);
