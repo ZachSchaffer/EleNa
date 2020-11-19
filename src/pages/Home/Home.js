@@ -73,6 +73,7 @@ class Home extends React.Component {
           <FormControl>
             <InputLabel>Starting Address</InputLabel>
             <Input
+              multiline
               aria-describedby='starting-address'
               onChange={(e) => this.setState({ startAddress: e.target.value })}
             />
@@ -82,6 +83,7 @@ class Home extends React.Component {
           <FormControl>
             <InputLabel>Ending Address</InputLabel>
             <Input
+              multiline
               aria-describedby='ending-address'
               onChange={(e) => this.setState({ endAddress: e.target.value })}
             />
