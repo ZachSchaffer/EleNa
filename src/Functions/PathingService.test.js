@@ -1,4 +1,4 @@
-import PathingService from './PathingService';
+import { PathingService, Dijkstra} from './PathingService';
 import Location from './Location';
 
 test('test getStartCorner', () => {
@@ -49,3 +49,36 @@ test('test getSearchArea', () => {
     [42.382572859999996, -72.52261164000001],
   ]);
 });
+
+test('test Djikstra', () =>{
+
+})
+
+test('test determinePath', () => {
+
+})
+
+test('test createAdjacencyMatrix', () => {
+
+  let nodesList = [
+    new Location(1,1, 0),
+    new Location(2,2, 10),
+    new Location(3,3,2),
+    new Location(4,4,7),
+    new Location(5,5,8),
+    new Location(6,6,4),
+  ];
+
+  let test = new Dijkstra(nodesList, true, 20);
+  let result = test.createAdjacencyMatrix();
+  expect(result).toEqual([
+    [0, 10, 2, 7, 8, 4],
+    [0, 0, 0, 0, 0, 0],
+    [0, 8, 0, 5, 6, 2],
+    [0, 3, 0, 0, 1, 0],
+    [0, 2, 0, 0, 0, 0],
+    [0, 6, 0, 3, 4, 0]
+
+  ])
+
+})

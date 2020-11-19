@@ -1,7 +1,7 @@
 import React from 'react';
-import { Button, CircularProgress, FormControl, InputLabel, Input, Typography } from '@material-ui/core';
+import { Button, CircularProgress, FormControl, InputLabel, Input, Typography, Switch } from '@material-ui/core';
 import Map from '../../Components/MapView/MapView';
-import PathingService from '../../Functions/PathingService';
+import { PathingService } from '../../Functions/PathingService';
 import {
   handleFetchGeoData
 } from '../../Functions/NetworkingFunctions';
@@ -13,6 +13,8 @@ class Home extends React.Component {
       componentIsLoading: false,
       startAddress: null,
       endAddress: null,
+      accuracy: null,
+      toggle: null,
       path: []
     };
 
@@ -88,6 +90,25 @@ class Home extends React.Component {
               onChange={(e) => this.setState({ endAddress: e.target.value })}
             />
           </FormControl>
+          <br />
+          <br />
+          <FormControl>
+            <InputLabel>% Path Accuracy</InputLabel>
+            <Input
+              multiline
+              aria-describedby='% Path Accuracy'
+              onChange={(e) => this.setState({ accuracy: e.target.value })}
+            />
+          </FormControl>
+          <br />
+          <br />
+          Toggle minimization
+          <Switch
+            onChange={(e) => this.setState({ toggle: e.target.checked })}
+            name="checkedA"
+            inputProps={{ 'aria-label': 'secondary checkbox' }}
+          >
+            </Switch>
           <br />
           <br />
           <Button

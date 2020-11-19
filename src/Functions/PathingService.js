@@ -7,7 +7,7 @@ const FEET_IN_LAT_DEGREE = 364000;
 const FEET_IN_LNG_DEGREE = 364434.53; // only for Amherst, MA
 const MAX_ELEVATION = 10000;
 
-export default class PathingService {
+export class PathingService {
   constructor(start, end) {
     this.start = start;
     this.end = end;
@@ -245,7 +245,7 @@ export default class PathingService {
 }
 
 //I am assuming that we will never visit the same node twice
-class Dijkstra {
+export class Dijkstra {
   constructor(nodesList, elevation, x) {
     this.nodesList = nodesList;
     this.elevation = elevation;
