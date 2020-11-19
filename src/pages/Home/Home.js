@@ -1,5 +1,6 @@
 import React from 'react';
 import { Button } from '@material-ui/core';
+import Map from '../../Components/MapView/MapView';
 import AddressInput from '../../Components/AddressInput/AddressInput';
 import PathingService from '../../Functions/PathingService';
 
@@ -8,8 +9,9 @@ class Home extends React.Component {
     super(props);
     this.state = {
       shouldFetch: 0,
-      startLocation: null,
-      endLocation: null,
+      startLocation: null, //new Location(42.396242, -72.512482, 357.61),
+      endLocation: null, //new Location(42.389363, -72.519103, 367.45),
+      path: []
     };
 
     this.pathingService = new PathingService(null, null);
@@ -19,6 +21,11 @@ class Home extends React.Component {
     this.setState({ startLocation: location });
     this.pathingService.setStartLocation(location);
   }
+
+  async setPath(path) {
+    console.log(this.setState({path: await path}));
+  }
+
   setEndLocation(location) {
     this.setState({ endLocation: location });
     this.pathingService.setEndLocation(location);
@@ -27,54 +34,66 @@ class Home extends React.Component {
   computePath() {}
 
   render() {
+
     return (
       <div>
-        <AddressInput
-          shouldFetch={this.state.shouldFetch}
-          setLocation={this.setStartLocation.bind(this)}
-          addressLabel="Starting Address"
-          inputID="Starting Input"
-        />
-        <br />
-        <AddressInput
-          shouldFetch={this.state.shouldFetch}
-          setLocation={this.setEndLocation.bind(this)}
-          addressLabel="Ending Address"
-          inputID="Ending Input"
-        />
-        <br />
-        <Button
-          onClick={() =>
-            this.setState({
-              shouldFetch: this.state.shouldFetch + 1,
-            })
-          }
-          variant="contained"
-          color="primary"
-          aria-label="Fetch data for start and end address"
+        <div
+          style={{
+            width: '20vw',
+            float: 'left',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+          }}
         >
-          Fetch Data
-        </Button>
-        <Button
+          <br />
+          <br />
+          <AddressInput
+            shouldFetch={this.state.shouldFetch}
+            setLocation={this.setStartLocation.bind(this)}
+            addressLabel="Starting Address"
+            inputID="Starting Input"
+          />
+          <br />
+          <AddressInput
+            shouldFetch={this.state.shouldFetch}
+            setLocation={this.setEndLocation.bind(this)}
+            addressLabel="Ending Address"
+            inputID="Ending Input"
+          />
+          <br />
+          <Button
+            onClick={() =>
+              this.setState({
+                shouldFetch: this.state.shouldFetch + 1,
+              })
+            }
+            variant="contained"
+            color="primary"
+            aria-label="Fetch data for start and end address"
+          >
+            Fetch Data
+          </Button>
+          <br />
+          <br />
+          <Button
           disabled={
             this.state.startLocation === null && this.state.endLocation === null
           }
-          onClick={this.pathingService.shortestPath}
+          onClick={() => this.setPath(this.pathingService.shortestPath())}
           variant="outlined"
           color="primary"
         >
           Test Dijkstra
         </Button>
-        <Button
-          disabled={
-            this.state.startLocation === null && this.state.endLocation === null
-          }
-          onClick={this.pathingService.getCreateGrid}
-          variant="outlined"
-          color="primary"
-        >
-          Test Create Grid
-        </Button>
+        </div>
+        <div style={{ float: 'right', width: '79vw' }}>
+          {this.state.startLocation && this.state.endLocation ? (
+            <Map markers={this.state.path} />
+          ) : (
+            <Map />
+          )}
+        </div>
       </div>
     );
   }

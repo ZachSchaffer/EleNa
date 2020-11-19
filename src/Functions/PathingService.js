@@ -172,7 +172,7 @@ export default class PathingService {
     let path = new Dijkstra(flatGrid, true, 20);
     let matrix = path.createAdjacencyMatrix();
     console.log(this.start);
-    path.determinePath(matrix);
+    return path.determinePath(matrix);
   }
 
   //calculate the search area within K % of the shortest path
