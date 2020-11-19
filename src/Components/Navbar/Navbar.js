@@ -31,9 +31,6 @@ export default class Navbar extends React.Component {
             >
               <MenuIcon />
             </IconButton>
-            <Typography variant="h6">
-              <Link href="/home"> News</Link>
-            </Typography>
           </Toolbar>
         </AppBar>
         <Drawer
@@ -42,10 +39,15 @@ export default class Navbar extends React.Component {
           onClose={this.toggleDrawer}
         >
           <List style={{ width: 250 }}>
-            <ListItem button key={'Map View'}>
+            <ListItem button key={'Map View'} component={'a'} href={'/home'}>
               <ListItemText primary={'Map View'} />
             </ListItem>
-            <ListItem button key={'Turn by Turn View'}>
+            <ListItem
+              button
+              key={'Turn by Turn View'}
+              component={'a'}
+              href={'/tbt'}
+            >
               <ListItemText primary={'Turn by Turn View'} />
             </ListItem>
           </List>
