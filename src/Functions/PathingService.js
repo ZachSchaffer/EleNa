@@ -159,11 +159,16 @@ export default class PathingService {
         temp = grid[0][0];
     }
     // let nodesList = [
-    //   this.start,
-    //   new Location(41.5, -72, 0),
-    //   new Location(42, -71.5, 500),
-    //   new Location(43, -76.5, 1000),
+    //   new Location(1,1, 0),
+    //   new Location(2,2, 10),
+    //   new Location(3,3,2),
+    //   new Location(4,4,7),
+    //   new Location(5,5,8),
+    //   new Location(6,6,4),
     // ];
+    // let test = new Dijkstra(nodesList, true, 20);
+    // let result = test.createAdjacencyMatrix();
+    // console.log(test.determinePath(result));
     //turn grid into 1d array
     let flatGrid = [];
     for (let i = 0; i < grid.length; i++) {
@@ -322,12 +327,13 @@ class Dijkstra {
     for (let k = 0; k < 10; k++) {
       let minDistance = MAX_ELEVATION;
       let closestNode = null;
-      for (let j = 0; j < this.nodesList.length; j++) {
+      for (let j = this.nodesList.length-1;j>=0; j--) {
         if (!distances[j].visited && distances[j].dist < minDistance) {
           minDistance = distances[j].dist;
           closestNode = distances[j].num;
         }
       }
+      
       pathSoFar += this.distance(
         this.nodesList[currNode],
         this.nodesList[closestNode]
@@ -370,8 +376,12 @@ class Dijkstra {
       path.push(this.nodesList[0]);
     }
     //}
-    console.log(path);
-    return path;
+    let pathToReturn = [];
+    for(let i =path.length-1;i>=0;i--){
+      pathToReturn.push(path[i]);
+    }
+    console.log(pathToReturn);
+    return pathToReturn;
     // for (let j = 0; j < this.nodesList.length - 1; j++) {
     //   pQueue.push({
     //     node: this.nodesList[j],
