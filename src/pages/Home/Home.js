@@ -11,6 +11,7 @@ class Home extends React.Component {
       shouldFetch: 0,
       startLocation: null, //new Location(42.396242, -72.512482, 357.61),
       endLocation: null, //new Location(42.389363, -72.519103, 367.45),
+      path: []
     };
 
     this.pathingService = new PathingService(null, null);
@@ -20,6 +21,11 @@ class Home extends React.Component {
     this.setState({ startLocation: location });
     this.pathingService.setStartLocation(location);
   }
+
+  async setPath(path) {
+    console.log(this.setState({path: await path}));
+  }
+
   setEndLocation(location) {
     this.setState({ endLocation: location });
     this.pathingService.setEndLocation(location);
@@ -28,6 +34,7 @@ class Home extends React.Component {
   computePath() {}
 
   render() {
+
     return (
       <div>
         <div
@@ -70,31 +77,19 @@ class Home extends React.Component {
           <br />
           <br />
           <Button
-            disabled={
-              this.state.startLocation === null &&
-              this.state.endLocation === null
-            }
-            onClick={this.pathingService.shortestPath}
-            variant="outlined"
-            color="primary"
-          >
-            Test Dijkstra
-          </Button>
-          <Button
-            disabled={
-              this.state.startLocation === null &&
-              this.state.endLocation === null
-            }
-            onClick={this.pathingService.createGrid}
-            variant="outlined"
-            color="primary"
-          >
-            Test Create Grid
-          </Button>
+          disabled={
+            this.state.startLocation === null && this.state.endLocation === null
+          }
+          onClick={() => this.setPath(this.pathingService.shortestPath())}
+          variant="outlined"
+          color="primary"
+        >
+          Test Dijkstra
+        </Button>
         </div>
         <div style={{ float: 'right', width: '79vw' }}>
           {this.state.startLocation && this.state.endLocation ? (
-            <Map markers={[this.state.startLocation, this.state.endLocation]} />
+            <Map markers={this.state.path} />
           ) : (
             <Map />
           )}

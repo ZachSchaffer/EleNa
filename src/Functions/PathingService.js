@@ -1,10 +1,11 @@
 //import PriorityQueue from 'priorityqueue';
-import { getElevationURLMulti } from '../Functions/NetworkingFunctions';
+import { getElevationURLAirMapMulti } from '../Functions/NetworkingFunctions';
 import Location from './Location';
 import axios from 'axios';
 
 const FEET_IN_LAT_DEGREE = 364000;
 const FEET_IN_LNG_DEGREE = 364434.53; // only for Amherst, MA
+const MAX_ELEVATION = 10000;
 
 export default class PathingService {
   constructor(start, end) {
@@ -12,6 +13,8 @@ export default class PathingService {
     this.end = end;
     this.createGrid = this.createGrid.bind(this);
     this.shortestPath = this.shortestPath.bind(this);
+    this.getStartCorner = this.getStartCorner.bind(this);
+    this.getCreateGrid = this.getCreateGrid.bind(this);
   }
 
   setStartLocation(location) {
@@ -30,8 +33,13 @@ export default class PathingService {
     this.end = location;
   }
 
+  async getCreateGrid() {
+    var grid = await this.createGrid();
+    console.log(grid);
+  }
+
   //create grid of location objects in the search area
-  createGrid() {
+  async createGrid() {
     // 1 degree of latitude is 69 miles or 364k feet
     var grid = []; // grid to fill with Location objects
 
@@ -41,12 +49,12 @@ export default class PathingService {
 
     // calculates the accuracy
     // scales based on the flat distance between the two locations
-    var accuracy = 100 / Math.sqrt(latDif ** 2 + lngDif ** 2);
+    var accuracy = 27000 * Math.sqrt(latDif ** 2 + lngDif ** 2);
 
     // calculate distance between points and retrieve corners of the area
-    var latVariation = latDif / ((latDif * FEET_IN_LAT_DEGREE) / accuracy); // convert to feet then get a point every <accuracy> feet
-    var lngVariation = lngDif / ((lngDif * FEET_IN_LNG_DEGREE) / accuracy); // convert to feet then get a point every <accuracy> feet
-    var corners = this.getSearchArea(latDif, lngDif, 2);
+    var latVariation = latDif / Math.floor((latDif * FEET_IN_LAT_DEGREE) / accuracy); // convert to feet then get a point every <accuracy> feet
+    var lngVariation = lngDif / Math.floor((lngDif * FEET_IN_LNG_DEGREE) / accuracy); // convert to feet then get a point every <accuracy> feet
+    var corners = this.getSearchArea(latDif, lngDif, 0);
 
     // fill latLngList with points within the area denoted by 'corners' equally spaced by
     // latVariation and lngVariation
@@ -65,17 +73,22 @@ export default class PathingService {
       currLatValue -= latVariation;
     }
     // calculate number of rows to include in the grid
+    //var rows = latLngPayload["locations"].length / columns;
     var rows = latLngList.length / columns;
 
+    console.log(rows);
+    console.log(columns);
+    console.log(latLngList.length);
+
     // get the api url
-    var elevationApiURL = getElevationURLMulti(latLngList);
+    var elevationApiURL = getElevationURLAirMapMulti(latLngList);
 
     // make API call with list of latitude/longitude points
-    axios
+    await axios
       .get(elevationApiURL)
       .then((resp) => {
-        console.log('Response received');
-        console.log(resp);
+        //console.log('Response received');
+        //console.log(resp);
         try {
           // fill the grid
           for (var i = 0; i < latLngList.length; i++) {
@@ -83,7 +96,7 @@ export default class PathingService {
             var loc = new Location(
               latLngList[i][0],
               latLngList[i][1],
-              resp.data.elevationProfile[i].height
+              resp.data.data[i]
             );
 
             // get the row index
@@ -95,7 +108,7 @@ export default class PathingService {
             // add the location to the grid
             grid[row].push(loc);
           }
-          console.log(grid);
+          //console.log(grid);
         } catch (error) {
           console.error(
             `Error: ${error}. Error extracting elevation. Ensure a valid address was input`
@@ -105,41 +118,66 @@ export default class PathingService {
       .catch((err) => {
         console.error(`Fetch failed with error ${err.message}`);
       });
+    return grid;
   }
 
-  //calculate the shortest path between 2 points in miles
-  shortestPath() {
-    //temporary code from https://stackoverflow.com/questions/27928/calculate-distance-between-two-latitude-longitude-points-haversine-formula?page=1&tab=votes
-    console.log(this.start.getLongitude());
-    var lat1 = this.start.getLatitude();
-    var lon1 = this.start.getLongitude();
-    var lat2 = this.end.getLatitude();
-    var lon2 = this.end.getLongitude();
-    var R = 3958.8; // Radius of the earth in miles
-    var dLat = (lat2 - lat1) * (Math.PI / 180);
-    var dLon = (lon2 - lon1) * (Math.PI / 180);
-    var a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos((Math.PI / 180) * lat1) *
-        Math.cos((Math.PI / 180) * lat2) *
-        Math.sin(dLon / 2) *
-        Math.sin(dLon / 2);
-    var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    var d = R * c; // Distance in miles
-
-    // TODO pass in grid
-    let nodesList = [
-      this.start,
-      new Location(41.5, -72, 0),
-      new Location(42, -71.5, 500),
-      new Location(43, -76.5, 1000),
-    ];
-    let path = new Dijkstra(nodesList, true, this.start, this.end, 20);
+  //calculate the path between 2 points
+  async shortestPath() {
+    let grid = await this.createGrid();
+    console.log(grid);
+    let corner = this.getStartCorner();
+    let width = grid[0].length;
+    let height = grid.length;
+    let temp = null;
+    switch (corner) {
+      //bottom right
+      case 0:
+        temp = grid[0][0];
+        grid[0][0] = grid[height - 1][width - 1];
+        grid[height - 1][width - 1] = temp;
+        break;
+      //bottom left
+      case 1:
+        temp = grid[height - 1][0];
+        grid[height - 1][0] = grid[0][0];
+        grid[0][0] = temp;
+        temp = grid[0][width - 1];
+        grid[0][width - 1] = grid[height - 1][width - 1];
+        grid[height - 1][width - 1] = temp;
+        break;
+      //top right
+      case 2:
+        temp = grid[0][width - 1];
+        grid[0][width - 1] = grid[0][0];
+        grid[0][0] = temp;
+        temp = grid[height - 1][0];
+        grid[height - 1][0] = grid[height - 1][width - 1];
+        grid[height - 1][width - 1] = temp;
+        break;
+      //top left
+      default:
+        temp = grid[0][0];
+    }
+    // let nodesList = [
+    //   new Location(1,1, 0),
+    //   new Location(2,2, 10),
+    //   new Location(3,3,2),
+    //   new Location(4,4,7),
+    //   new Location(5,5,8),
+    //   new Location(6,6,4),
+    // ];
+    // let test = new Dijkstra(nodesList, true, 20);
+    // let result = test.createAdjacencyMatrix();
+    // console.log(test.determinePath(result));
+    //turn grid into 1d array
+    let flatGrid = [];
+    for (let i = 0; i < grid.length; i++) {
+      flatGrid = flatGrid.concat(grid[i]);
+    }
+    let path = new Dijkstra(flatGrid, true, 20);
     let matrix = path.createAdjacencyMatrix();
     console.log(this.start);
-    path.determinePath(matrix);
-
-    return d;
+    return path.determinePath(matrix);
   }
 
   //calculate the search area within K % of the shortest path
@@ -150,92 +188,76 @@ export default class PathingService {
     var lng2 = this.end.getLongitude();
     var latCushion = (latDif * k) / 100; // latitude cushion of k%
     var lngCushion = (lngDif * k) / 100; // longitude cushion of k%
+    var corner = this.getStartCorner();
+    switch (corner) {
+      case 0:
+        // start in bottom right
+        return [
+          [lat1 - latCushion, lng1 + lngCushion], // bottom right
+          [lat2 + latCushion, lng1 + lngCushion], // top right
+          [lat1 - latCushion, lng2 - lngCushion], // bottom left
+          [lat2 + latCushion, lng2 - lngCushion], // top left
+        ];
+      case 1:
+        // start in bottom left
+        return [
+          [lat1 - latCushion, lng2 + lngCushion], // bottom right
+          [lat2 + latCushion, lng2 + lngCushion], // top right
+          [lat1 - latCushion, lng1 - lngCushion], // bottom left
+          [lat2 + latCushion, lng1 - lngCushion], // top left
+        ];
+      case 2:
+        // start in top right
+        return [
+          [lat2 - latCushion, lng1 + lngCushion], // bottom right
+          [lat1 + latCushion, lng1 + lngCushion], // top right
+          [lat2 - latCushion, lng2 - lngCushion], // bottom left
+          [lat1 + latCushion, lng2 - lngCushion], // top left
+        ];
+      default:
+        // start in top left
+        return [
+          [lat2 - latCushion, lng2 + lngCushion], // bottom right
+          [lat1 + latCushion, lng2 + lngCushion], // top right
+          [lat2 - latCushion, lng1 - lngCushion], // bottom left
+          [lat1 + latCushion, lng1 - lngCushion], // top left
+        ];
+    }
+  }
+  // Returns integer representing which corner has the starting location
+  getStartCorner() {
+    var lat1 = this.start.getLatitude();
+    var lng1 = this.start.getLongitude();
+    var lat2 = this.end.getLatitude();
+    var lng2 = this.end.getLongitude();
     if (lat1 <= lat2 && lng1 >= lng2) {
-      // start in bottom right
-      return [
-        [lat1 - latCushion, lng1 + lngCushion], // bottom right
-        [lat2 + latCushion, lng1 + lngCushion], // top right
-        [lat1 - latCushion, lng2 - lngCushion], // bottom left
-        [lat2 + latCushion, lng2 - lngCushion], // top left
-      ];
+      return 0; // bottom right
     } else if (lat1 <= lat2 && lng1 <= lng2) {
-      // start in bottom left
-      return [
-        [lat1 - latCushion, lng2 + lngCushion], // bottom right
-        [lat2 + latCushion, lng2 + lngCushion], // top right
-        [lat1 - latCushion, lng1 - lngCushion], // bottom left
-        [lat2 + latCushion, lng1 - lngCushion], // top left
-      ];
+      return 1; // bottom left
     } else if (lat1 >= lat2 && lng1 >= lng2) {
-      // start in top right
-      return [
-        [lat2 - latCushion, lng1 + lngCushion], // bottom right
-        [lat1 + latCushion, lng1 + lngCushion], // top right
-        [lat2 - latCushion, lng2 - lngCushion], // bottom left
-        [lat1 + latCushion, lng2 - lngCushion], // top left
-      ];
+      return 2; // top right
     }
     // lat1 >= lat2 && lng1 <= lng2
-    // start in top left
-    return [
-      [lat2 - latCushion, lng2 + lngCushion], // bottom right
-      [lat1 + latCushion, lng2 + lngCushion], // top right
-      [lat2 - latCushion, lng1 - lngCushion], // bottom left
-      [lat1 + latCushion, lng1 - lngCushion], // top left
-    ];
+    return 3; // top left
   }
 }
 
-function distance(start, end) {
-  var lat1 = start.getLatitude();
-  var lon1 = start.getLongitude();
-  var lat2 = end.getLatitude();
-  var lon2 = end.getLongitude();
-  var R = 3958.8; // Radius of the earth in miles
-  var dLat = (lat2 - lat1) * (Math.PI / 180);
-  var dLon = (lon2 - lon1) * (Math.PI / 180);
-  var a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos((Math.PI / 180) * lat1) *
-      Math.cos((Math.PI / 180) * lat2) *
-      Math.sin(dLon / 2) *
-      Math.sin(dLon / 2);
-  var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  var d = R * c; // Distance in miles
-  return d;
-}
-
-//TODO I am assuming that the first node in the grid is the start and the last node is the end.
-//Not sure if I should change that
-//I am also assuming that we will never visit the same node twice
+//I am assuming that we will never visit the same node twice
 class Dijkstra {
-  constructor(nodesList, elevation, start, end, x) {
+  constructor(nodesList, elevation, x) {
     this.nodesList = nodesList;
     this.elevation = elevation;
-    this.start = start;
-    this.end = end;
     this.x = x;
     this.createAdjacencyMatrix = this.createAdjacencyMatrix.bind(this);
     this.determinePath = this.determinePath.bind(this);
     this.distance = this.distance.bind(this);
   }
   distance(start, end) {
-    var lat1 = start.getLatitude();
-    var lon1 = start.getLongitude();
-    var lat2 = end.getLatitude();
-    var lon2 = end.getLongitude();
-    var R = 3958.8; // Radius of the earth in miles
-    var dLat = (lat2 - lat1) * (Math.PI / 180);
-    var dLon = (lon2 - lon1) * (Math.PI / 180);
-    var a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos((Math.PI / 180) * lat1) *
-        Math.cos((Math.PI / 180) * lat2) *
-        Math.sin(dLon / 2) *
-        Math.sin(dLon / 2);
-    var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    var d = R * c; // Distance in miles
-    return d;
+    var latDif = Math.abs(start.getLatitude() - end.getLatitude());
+    var lngDif = Math.abs(start.getLongitude() - end.getLongitude());
+    var latFeet = latDif * FEET_IN_LAT_DEGREE;
+    var lngFeet = lngDif * FEET_IN_LNG_DEGREE;
+    return Math.sqrt(latFeet ** 2 + lngFeet ** 2); // Distance in miles
   }
   createAdjacencyMatrix() {
     let adjMatrix = [];
@@ -254,7 +276,6 @@ class Dijkstra {
       }
       adjMatrix.push(elevationDiff);
     }
-
     //if we want to maximize instead of minimize, set elevation to 1/elevation
     if (!this.elevation) {
       for (let j = 0; j < this.nodesList.length; j++) {
@@ -269,7 +290,7 @@ class Dijkstra {
   }
   //run dijkstra to get shortest path with adjMatrix values
   //at each step check to make sure distance within x%
-  //if exceeds x%, set all neighbors of current node to infinity in matrix
+  //if exceeds x%, set distance to that node to infinity in matrix and visited to true
   determinePath(adjMatrix) {
     // let pQueue = new PriorityQueue((a, b) => {
     //   if (a.dist < b.dist) {
@@ -280,9 +301,11 @@ class Dijkstra {
     //     return 0;
     //   }
     // });
-    let shortestDistance = this.distance(start, end);
+    let shortestDistance = this.distance(
+      this.nodesList[0],
+      this.nodesList[this.nodesList.length - 1]
+    );
     let distancePlusX = shortestDistance * (1 + this.x / 100);
-    console.log(distancePlusX);
     let path = [];
     let distances = [];
     let pathToNode = [];
@@ -290,75 +313,75 @@ class Dijkstra {
       pathToNode.push(null);
       distances.push(null);
     }
-
+    for (let j = 0; j < this.nodesList.length; j++) {
+      distances[j] = {
+        num: j,
+        node: this.nodesList[j],
+        dist: adjMatrix[0][j],
+        visited: j === 0 || this.nodesList[j].elevation === null,
+      };
+    }
     let currNode = 0;
     let pathSoFar = 0;
-    //while (currNode !== this.nodesList[this.nodesList.length - 1]) {
+    //while (pathToNode[this.nodesList.length - 1] === null) {
+    for (let k = 0; k < 10; k++) {
+      let minDistance = MAX_ELEVATION;
+      let closestNode = null;
+      for (let j = this.nodesList.length-1;j>=0; j--) {
+        if (!distances[j].visited && distances[j].dist < minDistance) {
+          minDistance = distances[j].dist;
+          closestNode = distances[j].num;
+        }
+      }
+      
+      pathSoFar += this.distance(
+        this.nodesList[currNode],
+        this.nodesList[closestNode]
+      );
+      //if path is not already too long
+      if (pathSoFar < distancePlusX) {
+        pathToNode[closestNode] = currNode;
+        currNode = closestNode;
+        distances[currNode].visited = true;
+        distances[currNode].dist = minDistance;
+      } else {
+        distances[closestNode].visited = true;
+        distances[closestNode].dist = MAX_ELEVATION;
+      }
+      //update shortest paths if needed
+      for (let j = 0; j < this.nodesList.length; j++) {
+        if (
+          distances[j].dist >
+          distances[currNode].dist + adjMatrix[currNode][j]
+        ) {
+          //if path is not already too long
+          if (pathSoFar < distancePlusX) {
+            distances[j].dist =
+              distances[currNode].dist + adjMatrix[currNode][j];
+          }
+        }
+      }
+      if (k === 9 && pathToNode[this.nodesList.length - 1] === null) {
+        pathToNode[this.nodesList.length - 1] = currNode;
+      }
+    }
+
     if (pathToNode[this.nodesList.length - 1] !== null) {
       path.push(this.nodesList[this.nodesList.length - 1]);
-      let next = null;
+      let next = pathToNode[this.nodesList.length - 1];
       while (next !== 0) {
         path.push(this.nodesList[next]);
         next = pathToNode[next];
       }
       path.push(this.nodesList[0]);
     }
-    for (let j = 0; j < this.nodesList.length; j++) {
-      if (j === 1) {
-        console.log(j === 0);
-      }
-      distances[j] = {
-        num: j,
-        node: this.nodesList[j],
-        dist: adjMatrix[currNode][j],
-        visited: j === 0,
-      };
-      if (j === 1) {
-        console.log(distances[1]);
-        console.log(distances);
-      }
-    }
-    console.log('before update');
-    console.log(distances);
-    let minDistance = 10000;
-    let closestNode = null;
-    for (let j = 0; j < this.nodesList.length; j++) {
-      if (!distances[j].visited && distances[j].dist < minDistance) {
-        minDistance = distances[j].dist;
-        closestNode = distances[j].num;
-      }
-    }
-    console.log(typeof currNode);
-    console.log(typeof closestNode);
-    pathSoFar += distance(
-      this.nodesList[currNode],
-      this.nodesList[closestNode]
-    );
-    //if path is not already too long
-    if (pathSoFar < distancePlusX) {
-      pathToNode[closestNode] = currNode;
-      currNode = closestNode;
-
-      distances[currNode].visited = true;
-
-      distances[currNode].dist = minDistance;
-    }
-    //update shortest paths if needed
-    for (let j = 0; j < this.nodesList.length; j++) {
-      if (
-        distances[j].dist >
-        distances[currNode].dist + adjMatrix[currNode][j]
-      ) {
-        //if path is not already too long
-        if (pathSoFar < distancePlusX) {
-          distances[j].dist = distances[currNode].dist + adjMatrix[currNode][j];
-        }
-      }
-    }
     //}
-    console.log(path);
-    return path;
-
+    let pathToReturn = [];
+    for(let i =path.length-1;i>=0;i--){
+      pathToReturn.push(path[i]);
+    }
+    console.log(pathToReturn);
+    return pathToReturn;
     // for (let j = 0; j < this.nodesList.length - 1; j++) {
     //   pQueue.push({
     //     node: this.nodesList[j],
@@ -369,18 +392,3 @@ class Dijkstra {
     //console.log(pQueue.pop());
   }
 }
-
-let start = new Location(42.380368, -72.523143, 288.71);
-let end = new Location(41, -71, 88);
-let alg = new PathingService(start, end);
-alg.shortestPath();
-distance(start, end);
-let nodesList = [
-  start,
-  new Location(41.5, -72, 0),
-  new Location(42, -71.5, 500),
-  end,
-];
-let path = new Dijkstra(nodesList, true);
-let matrix = path.createAdjacencyMatrix();
-path.determinePath(matrix);

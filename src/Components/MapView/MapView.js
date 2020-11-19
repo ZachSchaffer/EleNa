@@ -22,9 +22,9 @@ class MapView extends Component {
 
   // TODO: play around with the numbers on this and increase color range
   getColor(start, end) {
-    if (start - end > 50) {
+    if (start - end > 0) {
       return 'green';
-    } else if (start - end < -50) {
+    } else if (start - end < -5) {
       return 'red';
     } else {
       return 'yellow';
