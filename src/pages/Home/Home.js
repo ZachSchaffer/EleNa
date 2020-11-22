@@ -127,6 +127,13 @@ class Home extends React.Component {
           <br />
           <br />
           {this.getElevationGain()}
+          <br/>
+          {this.state.path.length>0 && <>
+            <Typography>{`The elevation at the start is ${this.state.path[0].getElevation()} ft`}</Typography>
+            <br/>
+            <Typography>{`The elevation at the end is ${this.state.path[this.state.path.length-1].getElevation()} ft`}</Typography>
+          </>}
+
         </div>
         <div style={{
           float: 'right',
