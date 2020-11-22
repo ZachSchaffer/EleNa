@@ -13,8 +13,8 @@ class Home extends React.Component {
       componentIsLoading: false,
       startAddress: null,
       endAddress: null,
-      accuracy: null,
-      toggle: null,
+      accuracy: 0,
+      toggle: false,
       path: []
     };
 
