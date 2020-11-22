@@ -18,7 +18,7 @@ class Home extends React.Component {
       path: []
     };
 
-    this.pathingService = new PathingService(null, null);
+    this.pathingService = new PathingService(null, null, 0, false);
   }
 
   getElevationGain() {

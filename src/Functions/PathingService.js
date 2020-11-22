@@ -289,7 +289,7 @@ export class Dijkstra {
       adjMatrix.push(elevationDiff);
     }
     //if we want to maximize instead of minimize, set elevation to 1/elevation
-    if (!this.toggle) {
+    if (!this.toggle || this.toggle === null) {
       for (let j = 0; j < this.nodesList.length; j++) {
         for (let i = 0; i < this.nodesList.length; i++) {
           if (adjMatrix[i][j] !== 0) {
@@ -297,6 +297,7 @@ export class Dijkstra {
           }
         }
       }
+      console.log("falseToggle");
     }
     return adjMatrix;
   }
