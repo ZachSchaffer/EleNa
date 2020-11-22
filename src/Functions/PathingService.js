@@ -8,9 +8,11 @@ const FEET_IN_LNG_DEGREE = 364434.53; // only for Amherst, MA
 const MAX_ELEVATION = 10000;
 
 export class PathingService {
-  constructor(start, end) {
+  constructor(start, end, x, toggle) {
     this.start = start;
     this.end = end;
+    this.x = x;
+    this.toggle = toggle;
     this.createGrid = this.createGrid.bind(this);
     this.shortestPath = this.shortestPath.bind(this);
     this.getStartCorner = this.getStartCorner.bind(this);
@@ -27,6 +29,14 @@ export class PathingService {
 
   getEndLocation() {
     return this.end;
+  }
+
+  setToggle(toggle) {
+    this.toggle = toggle;
+  }
+
+  setPercent(num) {
+    this.x = num;
   }
 
   setEndLocation(location) {
@@ -126,7 +136,7 @@ export class PathingService {
   //calculate the path between 2 points
   async shortestPath() {
     let grid = await this.createGrid();
-    console.log(grid);
+    console.log(this.toggle);
     let corner = this.getStartCorner();
     let width = grid[0].length;
     let height = grid.length;
@@ -176,7 +186,7 @@ export class PathingService {
     for (let i = 0; i < grid.length; i++) {
       flatGrid = flatGrid.concat(grid[i]);
     }
-    let path = new Dijkstra(flatGrid, true, 20);
+    let path = new Dijkstra(flatGrid, this.toggle, this.x);
     let matrix = path.createAdjacencyMatrix();
     console.log(this.start);
     return path.determinePath(matrix);
@@ -246,9 +256,9 @@ export class PathingService {
 
 //I am assuming that we will never visit the same node twice
 export class Dijkstra {
-  constructor(nodesList, elevation, x) {
+  constructor(nodesList, toggle, x) {
     this.nodesList = nodesList;
-    this.elevation = elevation;
+    this.toggle = toggle;
     this.x = x;
     this.createAdjacencyMatrix = this.createAdjacencyMatrix.bind(this);
     this.determinePath = this.determinePath.bind(this);
@@ -279,7 +289,7 @@ export class Dijkstra {
       adjMatrix.push(elevationDiff);
     }
     //if we want to maximize instead of minimize, set elevation to 1/elevation
-    if (!this.elevation) {
+    if (!this.toggle) {
       for (let j = 0; j < this.nodesList.length; j++) {
         for (let i = 0; i < this.nodesList.length; i++) {
           if (adjMatrix[i][j] !== 0) {
@@ -303,6 +313,8 @@ export class Dijkstra {
     //     return 0;
     //   }
     // });
+    console.log(this.toggle);
+    console.log(this.x);
     let shortestDistance = this.distance(
       this.nodesList[0],
       this.nodesList[this.nodesList.length - 1]
@@ -335,13 +347,17 @@ export class Dijkstra {
           closestNode = distances[j].num;
         }
       }
+      if (closestNode === null) {
+        pathToNode[this.nodesList.length - 1] = currNode;
+        break;
+      }
 
       pathSoFar += this.distance(
         this.nodesList[currNode],
         this.nodesList[closestNode]
       );
       //if path is not already too long
-      if (pathSoFar < distancePlusX) {
+      if (pathSoFar < distancePlusX || closestNode === this.nodesList.length - 1) {
         pathToNode[closestNode] = currNode;
         currNode = closestNode;
         distances[currNode].visited = true;
