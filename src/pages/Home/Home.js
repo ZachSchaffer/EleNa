@@ -1,10 +1,17 @@
 import React from 'react';
-import { Button, CircularProgress, FormControl, InputLabel, Input, Typography, Switch } from '@material-ui/core';
+import {
+  Button,
+  CircularProgress,
+  FormControl,
+  InputLabel,
+  Input,
+  Typography,
+  Switch,
+} from '@material-ui/core';
 import Map from '../../Components/MapView/MapView';
 import { PathingService } from '../../Functions/PathingService';
-import {
-  handleFetchGeoData
-} from '../../Functions/NetworkingFunctions';
+import { handleFetchGeoData } from '../../Functions/NetworkingFunctions';
+import TurnByTurn from '../TurnByTurn/TurnByTurn';
 
 class Home extends React.Component {
   constructor(props) {
@@ -15,7 +22,7 @@ class Home extends React.Component {
       endAddress: null,
       accuracy: null,
       toggle: null,
-      path: []
+      path: [],
     };
 
     this.pathingService = new PathingService(null, null);
@@ -27,38 +34,42 @@ class Home extends React.Component {
     }
     let gain = 0;
     let loss = 0;
-    this.state.path && this.state.path.map((location, index) => {
-      if(index!==0){
-        let diff = this.state.path[index-1].getElevation() - location.getElevation();
-        if(diff > 0){
-          loss += Math.abs(diff);
-        } else {
-          gain += Math.abs(diff);
+    this.state.path &&
+      this.state.path.map((location, index) => {
+        if (index !== 0) {
+          let diff =
+            this.state.path[index - 1].getElevation() - location.getElevation();
+          if (diff > 0) {
+            loss += Math.abs(diff);
+          } else {
+            gain += Math.abs(diff);
+          }
         }
-      }
-    });
-    return <>
-      <Typography>{`Incline: ${gain} feet`}</Typography> 
-      <br />
-      <Typography>{`Decline: ${loss} feet`}</Typography></>;
+      });
+    return (
+      <>
+        <Typography>{`Incline: ${gain} feet`}</Typography>
+        <br />
+        <Typography>{`Decline: ${loss} feet`}</Typography>
+      </>
+    );
   }
 
-  async computePath(){
-    this.setState({componentIsLoading: true});
+  async computePath() {
+    this.setState({ componentIsLoading: true });
     const startLocation = await handleFetchGeoData(this.state.startAddress);
     const endLocation = await handleFetchGeoData(this.state.endAddress);
     console.log(startLocation, endLocation);
-    if(!startLocation || !endLocation || (startLocation === endLocation)) {
+    if (!startLocation || !endLocation || startLocation === endLocation) {
       return;
     }
     this.pathingService.setStartLocation(startLocation);
     this.pathingService.setEndLocation(endLocation);
-    this.setState({path: await this.pathingService.shortestPath()});
-    this.setState({componentIsLoading: false});
+    this.setState({ path: await this.pathingService.shortestPath() });
+    this.setState({ componentIsLoading: false });
   }
-  
-  render() {
 
+  render() {
     return (
       <div>
         <div
@@ -76,7 +87,7 @@ class Home extends React.Component {
             <InputLabel>Starting Address</InputLabel>
             <Input
               multiline
-              aria-describedby='starting-address'
+              aria-describedby="starting-address"
               onChange={(e) => this.setState({ startAddress: e.target.value })}
             />
           </FormControl>
@@ -86,7 +97,7 @@ class Home extends React.Component {
             <InputLabel>Ending Address</InputLabel>
             <Input
               multiline
-              aria-describedby='ending-address'
+              aria-describedby="ending-address"
               onChange={(e) => this.setState({ endAddress: e.target.value })}
             />
           </FormControl>
@@ -96,7 +107,7 @@ class Home extends React.Component {
             <InputLabel>% Path Accuracy</InputLabel>
             <Input
               multiline
-              aria-describedby='% Path Accuracy'
+              aria-describedby="% Path Accuracy"
               onChange={(e) => this.setState({ accuracy: e.target.value })}
             />
           </FormControl>
@@ -107,15 +118,22 @@ class Home extends React.Component {
             onChange={(e) => this.setState({ toggle: e.target.checked })}
             name="checkedA"
             inputProps={{ 'aria-label': 'secondary checkbox' }}
-          >
-            </Switch>
+          ></Switch>
+          Toggle Map / Turn By Turn
+          <Switch
+            onChange={(e) => this.setState({ mapToggle: e.target.checked })}
+            name="checkedA"
+            inputProps={{ 'aria-label': 'secondary checkbox' }}
+          ></Switch>
           <br />
           <br />
           <Button
-            onClick={() =>
-              this.computePath()
+            onClick={() => this.computePath()}
+            disabled={
+              this.state.startAddress === this.state.endAddress ||
+              !this.state.startAddress ||
+              !this.state.endAddress
             }
-            disabled={(this.state.startAddress === this.state.endAddress) || !this.state.startAddress || !this.state.endAddress}
             variant="contained"
             color="primary"
             aria-label="Fetch data for start and end address"
@@ -126,25 +144,30 @@ class Home extends React.Component {
           <br />
           {this.getElevationGain()}
         </div>
-        <div style={{ 
-            float: 'right', 
-            width: '79vw', 
+        <div
+          style={{
+            float: 'right',
+            width: '79vw',
             display: 'flex',
             flexDirection: 'column',
-            alignItems: 'center' 
-        }}>
+            alignItems: 'center',
+          }}
+        >
           {!this.state.componentIsLoading ? (
-            <Map markers={this.state.path} />
+            !this.state.mapToggle ? (
+              <Map markers={this.state.path} />
+            ) : (
+              <TurnByTurn />
+            )
           ) : (
             <>
-            <br />
-            <br />
-            <br />
-            <CircularProgress align='center' color="inherit" size='10em'/>
+              <br />
+              <br />
+              <br />
+              <CircularProgress align="center" color="inherit" size="10em" />
             </>
           )}
         </div>
-        
       </div>
     );
   }
