@@ -1,6 +1,6 @@
 //import PriorityQueue from 'priorityqueue';
 import { getElevationURLAirMapMulti } from '../Functions/NetworkingFunctions';
-import { Dijkstra, FEET_IN_LAT_DEGREE, FEET_IN_LNG_DEGREE} from './Dijkstra';
+import { Dijkstra, FEET_IN_LAT_DEGREE, FEET_IN_LNG_DEGREE } from './Dijkstra';
 import Location from './Location';
 import axios from 'axios';
 
@@ -128,20 +128,19 @@ export class PathingService {
   async shortestPath() {
     let grid = await this.createGrid();
     let corner = this.getStartCorner();
-    let width = grid[0].length;
-    let height = grid.length;
+    console.log(corner);
     //turn grid into 1d array using a switch statement because the start node can be in different corners
     let flatGrid = [];
     switch (corner) {
       //bottom right
       case 0:
-        for (let i = grid.length-1; i >=0; i++) {
+        for (let i = grid.length - 1; i >= 0; i--) {
           flatGrid = flatGrid.concat(grid[i].reverse());
         }
         break;
       //bottom left
       case 1:
-        for (let i = grid.length-1; i >=0; i++) {
+        for (let i = grid.length - 1; i >= 0; i--) {
           flatGrid = flatGrid.concat(grid[i]);
         }
         break;
