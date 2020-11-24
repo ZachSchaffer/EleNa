@@ -1,4 +1,3 @@
-
 export const FEET_IN_LAT_DEGREE = 364000;
 export const FEET_IN_LNG_DEGREE = 364434.53; // only for Amherst, MA
 export const MAX_ELEVATION = 10000;
@@ -62,8 +61,6 @@ export class Dijkstra {
       //     return 0;
       //   }
       // });
-      console.log(this.toggle);
-      console.log(this.x);
       let shortestDistance = this.distance(
         this.nodesList[0],
         this.nodesList[this.nodesList.length - 1]
@@ -100,7 +97,6 @@ export class Dijkstra {
           pathToNode[this.nodesList.length - 1] = currNode;
           break;
         }
-  
         pathSoFar += this.distance(
           this.nodesList[currNode],
           this.nodesList[closestNode]
@@ -132,7 +128,6 @@ export class Dijkstra {
           pathToNode[this.nodesList.length - 1] = currNode;
         }
       }
-  
       if (pathToNode[this.nodesList.length - 1] !== null) {
         path.push(this.nodesList[this.nodesList.length - 1]);
         let next = pathToNode[this.nodesList.length - 1];

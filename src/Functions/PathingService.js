@@ -127,59 +127,39 @@ export class PathingService {
   //calculate the path between 2 points
   async shortestPath() {
     let grid = await this.createGrid();
-    console.log(this.toggle);
     let corner = this.getStartCorner();
     let width = grid[0].length;
     let height = grid.length;
-    let temp = null;
+    //turn grid into 1d array using a switch statement because the start node can be in different corners
+    let flatGrid = [];
     switch (corner) {
       //bottom right
       case 0:
-        temp = grid[0][0];
-        grid[0][0] = grid[height - 1][width - 1];
-        grid[height - 1][width - 1] = temp;
+        for (let i = grid.length-1; i >=0; i++) {
+          flatGrid = flatGrid.concat(grid[i].reverse());
+        }
         break;
       //bottom left
       case 1:
-        temp = grid[height - 1][0];
-        grid[height - 1][0] = grid[0][0];
-        grid[0][0] = temp;
-        temp = grid[0][width - 1];
-        grid[0][width - 1] = grid[height - 1][width - 1];
-        grid[height - 1][width - 1] = temp;
+        for (let i = grid.length-1; i >=0; i++) {
+          flatGrid = flatGrid.concat(grid[i]);
+        }
         break;
       //top right
       case 2:
-        temp = grid[0][width - 1];
-        grid[0][width - 1] = grid[0][0];
-        grid[0][0] = temp;
-        temp = grid[height - 1][0];
-        grid[height - 1][0] = grid[height - 1][width - 1];
-        grid[height - 1][width - 1] = temp;
+        for (let i = 0; i < grid.length; i++) {
+          flatGrid = flatGrid.concat(grid[i].reverse());
+        }
         break;
       //top left
       default:
-        temp = grid[0][0];
+        for (let i = 0; i < grid.length; i++) {
+          flatGrid = flatGrid.concat(grid[i]);
+        }
     }
-    // let nodesList = [
-    //   new Location(1,1, 0),
-    //   new Location(2,2, 10),
-    //   new Location(3,3,2),
-    //   new Location(4,4,7),
-    //   new Location(5,5,8),
-    //   new Location(6,6,4),
-    // ];
-    // let test = new Dijkstra(nodesList, true, 20);
-    // let result = test.createAdjacencyMatrix();
-    // console.log(test.determinePath(result));
-    //turn grid into 1d array
-    let flatGrid = [];
-    for (let i = 0; i < grid.length; i++) {
-      flatGrid = flatGrid.concat(grid[i]);
-    }
+    console.log(flatGrid);
     let path = new Dijkstra(flatGrid, this.toggle, this.x);
     let matrix = path.createAdjacencyMatrix();
-    console.log(this.start);
     return path.determinePath(matrix);
   }
 
