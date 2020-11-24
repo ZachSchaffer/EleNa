@@ -126,13 +126,14 @@ export class PathingService {
 
   //calculate the path between 2 points
   async shortestPath() {
+    //get the grid and corner where the start node is
     let grid = await this.createGrid();
     let corner = this.getStartCorner();
     console.log(corner);
     //turn grid into 1d array using a switch statement because the start node can be in different corners
     let flatGrid = [];
     switch (corner) {
-      //bottom right
+      //start node is in the bottom right of the grid
       case 0:
         for (let i = grid.length - 1; i >= 0; i--) {
           flatGrid = flatGrid.concat(grid[i].reverse());
@@ -157,6 +158,7 @@ export class PathingService {
         }
     }
     console.log(flatGrid);
+    //run Dijkstra algorithm to get shortest path
     let path = new Dijkstra(flatGrid, grid.length, grid[0].length, this.toggle, this.x);
     let matrix = path.createAdjacencyMatrix();
     return path.determinePath(matrix);
