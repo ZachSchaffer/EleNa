@@ -2,6 +2,7 @@ import PriorityQueue from 'priorityqueue';
 export const FEET_IN_LAT_DEGREE = 364000;
 export const FEET_IN_LNG_DEGREE = 364434.53; // only for Amherst, MA
 export const MAX_ELEVATION = 10000;
+const MAX_DISTANCE = 1000000;
 
 //This class runs the Djikstra algorithm on a grid of location objects passed from pathing service
 export class Djikstra {
@@ -10,7 +11,6 @@ export class Djikstra {
 
         this.startPosition = startPosition;
         this.endPosition = endPosition;
-        console.log(endPosition);
         // this.nodesList = nodesList;
         this.toggle = toggle;
         this.x = x;
@@ -22,6 +22,7 @@ export class Djikstra {
         this.isAdjacent = this.isAdjacent.bind(this);
         this.getAdjacentPoints = this.getAdjacentPoints.bind(this);
         this.getPathDistance = this.getPathDistance.bind(this);
+        this.determineShortestPathLength = this.determineShortestPathLength.bind(this);
     }
 
     //find the distance in feet between 2 location objects
@@ -178,14 +179,47 @@ export class Djikstra {
     }
 
     // retrieves the path distance
-    getPathDistance(nodes, startNode, startDistance) {
+    getPathDistance(nodes, startPosition, startDistance) {
         let distance = startDistance;
-        let next = startNode
+        let curr = startPosition;
+        let next = nodes[startPosition[0]][startPosition[1]];
         while (next !== null) {
-            distance += this.distance(next, nodes[next]);
-            next = nodes[next];
+            distance += this.distance(this.grid[next[0]][next[1]], this.grid[curr[0]][curr[1]]);
+            curr = next;
+            next = nodes[next[0]][next[1]];
         }
         return distance;
+    }
+
+    determineShortestPathLength(adjMatrix) {
+        let distances = []; //shortest distances to each node
+        let pq = new PriorityQueue((this.height * this.width) ** 2);
+        pq.enqueue(this.startPosition, 0);
+        for (let i = 0 ; i < this.grid.length ; i ++) {
+            distances.push([]);
+            for (let j = 0 ; j < this.grid[i].length ; j++) {
+                if (this.startPosition[0] === i && this.startPosition[1] === j) {
+                    distances[i].push(0);
+                } else {
+                    distances[i].push(MAX_DISTANCE);
+                }
+                
+            }
+        }
+
+        while (!pq.isEmpty()) {
+            let position = pq.dequeue();
+            let curr = this.grid[position[0]][position[1]];
+            adjMatrix[position[0]][position[1]].forEach(neighborPosition => {
+                let neighbor = this.grid[neighborPosition[0]][neighborPosition[1]];
+                let newDistance = distances[position[0]][position[1]] + this.distance(curr, neighbor);
+                if (newDistance < distances[neighborPosition[0]][neighborPosition[1]]) {
+                    distances[neighborPosition[0]][neighborPosition[1]] = newDistance;
+                    pq.enqueue(neighborPosition, distances[neighborPosition[0]][neighborPosition[1]]);
+                }
+            });
+        }
+        return distances[this.endPosition[0]][this.endPosition[1]];
     }
 
     //run Djikstra to get shortest path with adjMatrix values
@@ -193,15 +227,13 @@ export class Djikstra {
     //if exceeds x%, set distance to that node to infinity in matrix and visited to true
     determinePath(adjMatrix) {
         //find the shortest distance and distance within x% of that
-        console.log(this.grid);
-        console.log(this.endPosition[0]);
-        console.log(this.endPosition[1]);
         let startLocation = this.grid[this.startPosition[0]][this.startPosition[1]];
         let endLocation = this.grid[this.endPosition[0]][this.endPosition[1]];
-        let shortestDistance = this.distance(
-            startLocation,
-            endLocation
-        );
+        // let shortestDistance = this.distance(
+        //     startLocation,
+        //     endLocation
+        // );
+        let shortestDistance = this.determineShortestPathLength(adjMatrix);
         let distancePlusX = shortestDistance * (1 + this.x / 100);
         let path = []; //the final path
         
@@ -239,9 +271,7 @@ export class Djikstra {
             distances.push([]);
             prevNodes.push([]);
             for (let j = 0 ; j < this.grid[i].length ; j++) {
-                console.log("GRID ITERATION");
                 if (this.startPosition[0] === i && this.startPosition[1] === j) {
-                    console.log("SET START POSITION AS 0");
                     distances[i].push(0);
                 } else {
                     distances[i].push(MAX_ELEVATION);
@@ -250,8 +280,6 @@ export class Djikstra {
                 
             }
         }
-        console.log("PRINTING OUT THE DISTANCES");
-        console.log(distances);
 
         while (!pq.isEmpty()) {
             let position = pq.dequeue();
@@ -265,18 +293,17 @@ export class Djikstra {
                 } else {
                     newElevation += this.toggle ? 1 : 0;
                 }
-                console.log(newElevation);
-                console.log(neighbor);
-                // && this.getPathDistance(prevNodes, loc, this.distance(neighbor, loc)) < distancePlusX
-                if (newElevation < distances[neighborPosition[0]][neighborPosition[1]] ) {
-                    console.log("IN HERE");
+
+                let distanceToDestination = this.distance(neighbor, endLocation);
+                let currDistance = this.getPathDistance(prevNodes, position, this.distance(neighbor, this.grid[position[0]][position[1]]));
+
+                if (newElevation < distances[neighborPosition[0]][neighborPosition[1]] && currDistance + distanceToDestination < distancePlusX) {
                     distances[neighborPosition[0]][neighborPosition[1]] = newElevation;
                     prevNodes[neighborPosition[0]][neighborPosition[1]] = position;
                     pq.enqueue(neighborPosition, distances[neighborPosition[0]][neighborPosition[1]]);
                 }
             });
         }
-        console.log(distances);
 
 
         //while we havent found the target node
