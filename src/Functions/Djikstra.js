@@ -7,8 +7,10 @@ export const MAX_ELEVATION = 10000;
 export class Djikstra {
     constructor(grid, startPosition, endPosition, height, width, toggle, x) {
         this.grid = grid;
+
         this.startPosition = startPosition;
         this.endPosition = endPosition;
+        console.log(endPosition);
         // this.nodesList = nodesList;
         this.toggle = toggle;
         this.x = x;
@@ -19,6 +21,7 @@ export class Djikstra {
         this.distance = this.distance.bind(this);
         this.isAdjacent = this.isAdjacent.bind(this);
         this.getAdjacentPoints = this.getAdjacentPoints.bind(this);
+        this.getPathDistance = this.getPathDistance.bind(this);
     }
 
     //find the distance in feet between 2 location objects
@@ -50,7 +53,7 @@ export class Djikstra {
     }
 
     getAdjacentPoints(i, j) {
-        points = [];
+        let points = [];
         if (i-1 >= 0) {
             if (j-1 >= 0) {
                 // top left corner valid
@@ -85,23 +88,24 @@ export class Djikstra {
     }
 
     //create an adjacency matrix of the elevation gains between neighboring nodes to be used to find the path
-    createAdjacencyGraph() {
-        let adjGraph = {};
+    createAdjacencyMatrix() {
+        let adjMatrix = [];
         //calculate elevation gain between each pair of neighbors
         for (let i = 0; i < this.grid.length; i++) {
+            adjMatrix.push([]);
             for (let j = 0; j < this.grid[i].length; j++) {
-
                 // holds the current locations elevation in meters
-                let currElevation = this.grid[i][j].getElevation();
+                //let currElevation = this.grid[i][j].getElevation();
 
                 // holds the elevation gains for this location
-                let elGains = [];
+                //let elGains = [];
 
                 // add neighboring locations
-                adjGraph[this.grid[i][j]] = [];
-                this.getAdjacentPoints(i, j).forEach(point => {
-                    adjGraph[this.grid[i][j]].push(this.grid[points[0]][points[1]]);
-                });
+                adjMatrix[i].push([]);
+                adjMatrix[i][j] = this.getAdjacentPoints(i, j);
+                // this.getAdjacentPoints(i, j).forEach(point => {
+                //     adjMatrix[i][j].push(this.grid[point[0]][point[1]]);
+                // });
                 // iterate through all grid locations
                 // for (let k = 0; k < this.grid.length; k++) {
                 //     for (let l = 0; l < this.grid[k].length; l++) {
@@ -169,15 +173,29 @@ export class Djikstra {
         //         }
         //     }
         // }
-        console.log(adjGraph);
-        return adjGraph;
+        console.log(adjMatrix);
+        return adjMatrix;
+    }
+
+    // retrieves the path distance
+    getPathDistance(nodes, startNode, startDistance) {
+        let distance = startDistance;
+        let next = startNode
+        while (next !== null) {
+            distance += this.distance(next, nodes[next]);
+            next = nodes[next];
+        }
+        return distance;
     }
 
     //run Djikstra to get shortest path with adjMatrix values
     //at each sep check to make sure distance within x%
     //if exceeds x%, set distance to that node to infinity in matrix and visited to true
-    determinePath(adjGraph) {
+    determinePath(adjMatrix) {
         //find the shortest distance and distance within x% of that
+        console.log(this.grid);
+        console.log(this.endPosition[0]);
+        console.log(this.endPosition[1]);
         let startLocation = this.grid[this.startPosition[0]][this.startPosition[1]];
         let endLocation = this.grid[this.endPosition[0]][this.endPosition[1]];
         let shortestDistance = this.distance(
@@ -186,8 +204,8 @@ export class Djikstra {
         );
         let distancePlusX = shortestDistance * (1 + this.x / 100);
         let path = []; //the final path
-        let distances = {}; //shortest distances to each node
-        let pathToNode = []; //track previous visited node to get to current node
+        
+        //let pathToNode = []; //track previous visited node to get to current node
         //push distances from start to all other nodes to begin with
         // for (let i = 0 ; i < this.grid.length ; i++) {
         //     for (let j = 0 ; j < this.grid[i].length ; j++) {
@@ -210,30 +228,57 @@ export class Djikstra {
         //         visited: j === 0 || this.nodesList[j].elevation === null,
         //     });
         // }
-        let currNode = 0; //node that we are at now
-        let pathSoFar = 0;  //distance travelled so far
+        // let currNode = 0; //node that we are at now
+        // let pathSoFar = 0;  //distance travelled so far
 
-        let prevNodes = {};
-        let pq = new PriorityQueue(this.nodesList.length ** 2);
-        pq.enqueue(startLocation, 0);
+        let prevNodes = [];
+        let distances = []; //shortest distances to each node
+        let pq = new PriorityQueue((this.height * this.width) ** 2);
+        pq.enqueue(this.startPosition, 0);
         for (let i = 0 ; i < this.grid.length ; i ++) {
-            for (let j = 0 ; j < this.grid[i].length ; i++) {
+            distances.push([]);
+            prevNodes.push([]);
+            for (let j = 0 ; j < this.grid[i].length ; j++) {
+                console.log("GRID ITERATION");
                 if (this.startPosition[0] === i && this.startPosition[1] === j) {
-                    distances[startLocation] = 0;
+                    console.log("SET START POSITION AS 0");
+                    distances[i].push(0);
                 } else {
-                    distances[this.grid[i][j]] = MAX_ELEVATION;
+                    distances[i].push(MAX_ELEVATION);
                 }
-                prevNodes[this.grid[i][j]] = null;
+                prevNodes[i].push(null);
                 
             }
         }
+        console.log("PRINTING OUT THE DISTANCES");
+        console.log(distances);
 
         while (!pq.isEmpty()) {
-            let minNode = pq.dequeue();
-            let currElevation = minNode.getElevation();
-            this.adjGraph
+            let position = pq.dequeue();
+            let currElevation = this.grid[position[0]][position[1]].getElevation();
+            adjMatrix[position[0]][position[1]].forEach(neighborPosition => {
+                let neighbor = this.grid[neighborPosition[0]][neighborPosition[1]];
+                let newElevation = distances[position[0]][position[1]];
 
+                if (neighbor.getElevation() > currElevation) {
+                    newElevation += this.toggle ? 1/(neighbor.getElevation() - currElevation) : neighbor.getElevation() - currElevation;
+                } else {
+                    newElevation += this.toggle ? 1 : 0;
+                }
+                console.log(newElevation);
+                console.log(neighbor);
+                // && this.getPathDistance(prevNodes, loc, this.distance(neighbor, loc)) < distancePlusX
+                if (newElevation < distances[neighborPosition[0]][neighborPosition[1]] ) {
+                    console.log("IN HERE");
+                    distances[neighborPosition[0]][neighborPosition[1]] = newElevation;
+                    prevNodes[neighborPosition[0]][neighborPosition[1]] = position;
+                    pq.enqueue(neighborPosition, distances[neighborPosition[0]][neighborPosition[1]]);
+                }
+            });
         }
+        console.log(distances);
+
+
         //while we havent found the target node
         // while (pathToNode[this.nodesList.length - 1] === null) {
         //     let minDistance = MAX_ELEVATION;
@@ -279,17 +324,23 @@ export class Djikstra {
         //         }
         //     }
         // }
-        console.log(pathToNode);
-        //if we have found the target node, find the path to that node
-        if (pathToNode[this.nodesList.length - 1] !== null) {
-            path.push(this.nodesList[this.nodesList.length - 1]);
-            let next = pathToNode[this.nodesList.length - 1];
-            while (next !== 0) {
-                path.push(this.nodesList[next]);
-                next = pathToNode[next];
-            }
-            path.push(this.nodesList[0]);
+        // console.log(pathToNode);
+        path.push(endLocation);
+        let next = prevNodes[this.endPosition[0]][this.endPosition[1]];
+        while (next !== null) {
+            path.push(this.grid[next[0]][next[1]]);
+            next = prevNodes[next[0]][next[1]];
         }
+        // //if we have found the target node, find the path to that node
+        // if (pathToNode[this.nodesList.length - 1] !== null) {
+        //     path.push(this.nodesList[this.nodesList.length - 1]);
+        //     let next = pathToNode[this.nodesList.length - 1];
+        //     while (next !== 0) {
+        //         path.push(this.nodesList[next]);
+        //         next = pathToNode[next];
+        //     }
+        //     path.push(this.nodesList[0]);
+        // }
         console.log(path.reverse());
         return path.reverse();
     }

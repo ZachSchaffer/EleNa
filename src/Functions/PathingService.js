@@ -50,7 +50,7 @@ export class PathingService {
 
     // calculates the accuracy
     // scales based on the flat distance between the two locations
-    var accuracy = 50000 * Math.sqrt(latDif ** 2 + lngDif ** 2);
+    var accuracy = 27000 * Math.sqrt(latDif ** 2 + lngDif ** 2);
 
     // calculate distance between points and retrieve corners of the area
     var latVariation =
@@ -141,8 +141,8 @@ export class PathingService {
         // for (let i = grid.length - 1; i >= 0; i--) {
         //   flatGrid = flatGrid.concat(grid[i].reverse());
         // }
-        startPosition.push(grid.length);
-        startPosition.push(grid[0].length);
+        startPosition.push(grid.length-1);
+        startPosition.push(grid[0].length-1);
         endPosition.push(0);
         endPosition.push(0);
         break;
@@ -151,10 +151,10 @@ export class PathingService {
         // for (let i = grid.length - 1; i >= 0; i--) {
         //   flatGrid = flatGrid.concat(grid[i]);
         // }
-        startPosition.push(grid.length);
+        startPosition.push(grid.length-1);
         startPosition.push(0);
         endPosition.push(0);
-        endPosition.push(grid[0].length);
+        endPosition.push(grid[0].length-1);
         break;
       //top right
       case 2:
@@ -162,8 +162,8 @@ export class PathingService {
         //   flatGrid = flatGrid.concat(grid[i].reverse());
         // }
         startPosition.push(0);
-        startPosition.push(grid[0].length);
-        endPosition.push(grid.length);
+        startPosition.push(grid[0].length-1);
+        endPosition.push(grid.length-1);
         endPosition.push(0);
         break;
       //top left
@@ -173,13 +173,13 @@ export class PathingService {
         // }
         startPosition.push(0);
         startPosition.push(0);
-        endPosition.push(grid.length);
-        endPosition.push(grid[0].length)
+        endPosition.push(grid.length-1);
+        endPosition.push(grid[0].length-1)
     }
     console.log(flatGrid);
     //run Djikstra algorithm to get shortest path
     let path = new Djikstra(grid, startPosition, endPosition, grid.length, grid[0].length, this.toggle, this.x);
-    let graph = path.createAdjacencyGraph();
+    let graph = path.createAdjacencyMatrix();
     return path.determinePath(graph);
   }
 
