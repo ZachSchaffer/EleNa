@@ -157,7 +157,7 @@ class Home extends React.Component {
             !this.state.mapToggle ? (
               <Map markers={this.state.path} />
             ) : (
-              <TurnByTurn />
+              <TurnByTurn path={this.state.path}/>
             )
           ) : (
             <>
