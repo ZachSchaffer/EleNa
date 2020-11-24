@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, CircularProgress, FormControl, InputLabel, Input, Typography, Switch } from '@material-ui/core';
+import { Button, CircularProgress, FormControl, InputLabel, Input, Typography, Switch, FormHelperText } from '@material-ui/core';
 import Map from '../../Components/MapView/MapView';
 import { PathingService } from '../../Functions/PathingService';
 import {
@@ -13,7 +13,7 @@ class Home extends React.Component {
       componentIsLoading: false,
       startAddress: null,
       endAddress: null,
-      accuracy: 5,
+      accuracy: 20,
       toggle: false,
       path: []
     };
@@ -38,16 +38,16 @@ class Home extends React.Component {
       }
     });
     return <>
-      <Typography>{`Incline: ${gain} feet`}</Typography>
+      <Typography>{`Incline: ${gain} meters`}</Typography>
       <br />
-      <Typography>{`Decline: ${loss} feet`}</Typography></>;
+      <Typography>{`Decline: ${loss} meters`}</Typography></>;
   }
 
   async computePath() {
     this.setState({ componentIsLoading: true });
     const startLocation = await handleFetchGeoData(this.state.startAddress);
     const endLocation = await handleFetchGeoData(this.state.endAddress);
-    console.log(startLocation, endLocation);
+    console.log("start: ", startLocation, "end: " , endLocation);
     if (!startLocation || !endLocation || (startLocation === endLocation)) {
       return;
     }
@@ -65,16 +65,17 @@ class Home extends React.Component {
       <div>
         <div
           style={{
-            width: '20vw',
+            width: '18vw',
             float: 'left',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
+            padding: '1vw',
           }}
         >
           <br />
           <br />
-          <FormControl>
+          <FormControl fullWidth>
             <InputLabel>Starting Address</InputLabel>
             <Input
               multiline
@@ -84,7 +85,7 @@ class Home extends React.Component {
           </FormControl>
           <br />
           <br />
-          <FormControl>
+          <FormControl fullWidth>
             <InputLabel>Ending Address</InputLabel>
             <Input
               multiline
@@ -94,14 +95,22 @@ class Home extends React.Component {
           </FormControl>
           <br />
           <br />
-          <FormControl>
-            <InputLabel>% Path Accuracy</InputLabel>
+          <FormControl fullWidth>
+            <InputLabel>% Away From Shortest Path</InputLabel>
             <Input
-              multiline
+              type="number"
+              value={this.state.accuracy}
               aria-describedby='% Path Accuracy'
               onChange={(e) => this.setState({ accuracy: e.target.value })}
             />
           </FormControl>
+          {!(this.state.accuracy>=5 && this.state.accuracy<=100) && (
+            <FormControl error fullWidth>
+                <FormHelperText>
+                    Please input a number between 5 and 100
+                </FormHelperText>
+            </FormControl>
+          )}
           <br />
           <br />
           <Typography>{this.state.toggle ? 'Maximize Elevation' : 'Minimize Elevation'}</Typography>
@@ -117,7 +126,7 @@ class Home extends React.Component {
             onClick={() =>
               this.computePath()
             }
-            disabled={(this.state.startAddress === this.state.endAddress) || !this.state.startAddress || !this.state.endAddress}
+            disabled={!(this.state.accuracy>=5 && this.state.accuracy<=100) || (this.state.startAddress === this.state.endAddress) || !this.state.startAddress || !this.state.endAddress}
             variant="contained"
             color="primary"
             aria-label="Fetch data for start and end address"
@@ -129,15 +138,15 @@ class Home extends React.Component {
           {this.getElevationGain()}
           <br />
           {this.state.path.length > 0 && <>
-            <Typography>{`The elevation at the start is ${this.state.path[0].getElevation()} ft`}</Typography>
+            <Typography>{`The elevation at the start is ${this.state.path[0].getElevation()} meters`}</Typography>
             <br />
-            <Typography>{`The elevation at the end is ${this.state.path[this.state.path.length - 1].getElevation()} ft`}</Typography>
+            <Typography>{`The elevation at the end is ${this.state.path[this.state.path.length - 1].getElevation()} meters`}</Typography>
           </>}
 
         </div>
         <div style={{
           float: 'right',
-          width: '79vw',
+          width: '80vw',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center'

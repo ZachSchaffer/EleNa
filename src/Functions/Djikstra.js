@@ -84,7 +84,7 @@ export class Djikstra {
         if (j+1 < this.grid[0].length) {
             points.push([i, j+1]);
         }
-        return points
+        return points;
     }
 
     //create an adjacency matrix to be used by Djikstra where each cell is a list of adjacent positions
@@ -252,9 +252,7 @@ export class Djikstra {
             path.push(this.grid[next[0]][next[1]]);
             next = prevNodes[next[0]][next[1]];
         }
-
-        // reverse the path to get the start -> end location path needed by the UI
-        console.log(path.reverse());
-        return path.reverse();
+        console.log("the computed path is: ", path);
+        return path;
     }
 }
