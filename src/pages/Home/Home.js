@@ -13,12 +13,12 @@ class Home extends React.Component {
       componentIsLoading: false,
       startAddress: null,
       endAddress: null,
-      accuracy: null,
-      toggle: null,
+      accuracy: 5,
+      toggle: false,
       path: []
     };
 
-    this.pathingService = new PathingService(null, null);
+    this.pathingService = new PathingService(null, null, 0, false);
   }
 
   getElevationGain() {
@@ -28,9 +28,9 @@ class Home extends React.Component {
     let gain = 0;
     let loss = 0;
     this.state.path && this.state.path.map((location, index) => {
-      if(index!==0){
-        let diff = this.state.path[index-1].getElevation() - location.getElevation();
-        if(diff > 0){
+      if (index !== 0) {
+        let diff = this.state.path[index - 1].getElevation() - location.getElevation();
+        if (diff > 0) {
           loss += Math.abs(diff);
         } else {
           gain += Math.abs(diff);
@@ -38,25 +38,27 @@ class Home extends React.Component {
       }
     });
     return <>
-      <Typography>{`Incline: ${gain} feet`}</Typography> 
+      <Typography>{`Incline: ${gain} feet`}</Typography>
       <br />
       <Typography>{`Decline: ${loss} feet`}</Typography></>;
   }
 
-  async computePath(){
-    this.setState({componentIsLoading: true});
+  async computePath() {
+    this.setState({ componentIsLoading: true });
     const startLocation = await handleFetchGeoData(this.state.startAddress);
     const endLocation = await handleFetchGeoData(this.state.endAddress);
     console.log(startLocation, endLocation);
-    if(!startLocation || !endLocation || (startLocation === endLocation)) {
+    if (!startLocation || !endLocation || (startLocation === endLocation)) {
       return;
     }
     this.pathingService.setStartLocation(startLocation);
     this.pathingService.setEndLocation(endLocation);
-    this.setState({path: await this.pathingService.shortestPath()});
-    this.setState({componentIsLoading: false});
+    this.pathingService.setToggle(this.state.toggle);
+    this.pathingService.setPercent(this.state.accuracy);
+    this.setState({ path: await this.pathingService.shortestPath() });
+    this.setState({ componentIsLoading: false });
   }
-  
+
   render() {
 
     return (
@@ -102,13 +104,13 @@ class Home extends React.Component {
           </FormControl>
           <br />
           <br />
-          Toggle minimization
+          <Typography>{this.state.toggle ? 'Maximize Elevation' : 'Minimize Elevation'}</Typography>
           <Switch
             onChange={(e) => this.setState({ toggle: e.target.checked })}
             name="checkedA"
             inputProps={{ 'aria-label': 'secondary checkbox' }}
           >
-            </Switch>
+          </Switch>
           <br />
           <br />
           <Button
@@ -125,26 +127,33 @@ class Home extends React.Component {
           <br />
           <br />
           {this.getElevationGain()}
+          <br />
+          {this.state.path.length > 0 && <>
+            <Typography>{`The elevation at the start is ${this.state.path[0].getElevation()} ft`}</Typography>
+            <br />
+            <Typography>{`The elevation at the end is ${this.state.path[this.state.path.length - 1].getElevation()} ft`}</Typography>
+          </>}
+
         </div>
-        <div style={{ 
-            float: 'right', 
-            width: '79vw', 
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center' 
+        <div style={{
+          float: 'right',
+          width: '79vw',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center'
         }}>
           {!this.state.componentIsLoading ? (
             <Map markers={this.state.path} />
           ) : (
-            <>
-            <br />
-            <br />
-            <br />
-            <CircularProgress align='center' color="inherit" size='10em'/>
-            </>
-          )}
+              <>
+                <br />
+                <br />
+                <br />
+                <CircularProgress align='center' color="inherit" size='10em' />
+              </>
+            )}
         </div>
-        
+
       </div>
     );
   }
