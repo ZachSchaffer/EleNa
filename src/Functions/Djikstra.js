@@ -18,6 +18,7 @@ export class Djikstra {
         this.determinePath = this.determinePath.bind(this);
         this.distance = this.distance.bind(this);
         this.isAdjacent = this.isAdjacent.bind(this);
+        this.getAdjacentPoints = this.getAdjacentPoints.bind(this);
     }
 
     //find the distance in feet between 2 location objects
@@ -48,9 +49,44 @@ export class Djikstra {
         return false;
     }
 
+    getAdjacentPoints(i, j) {
+        points = [];
+        if (i-1 >= 0) {
+            if (j-1 >= 0) {
+                // top left corner valid
+                points.push([i-1, j-1]);
+            } 
+            if (j+1 < this.grid[0].length) {
+                // top right corner valid
+                points.push([i-1, j+1]);
+            } 
+            // top middle valid
+            points.push([i-1, j]);
+        }
+        if (i+1 < this.grid.length) {
+            if (j-1 >= 0) {
+                // bottom left corner valid
+                points.push([i+1, j-1]);
+            } 
+            if (j+1 < this.grid[0].length) {
+                // bottom right corner valid
+                points.push([i+1, j+1]);
+            } 
+            // bottom middle valid
+            points.push([i+1, j]);
+        }
+        if (j-1 >= 0) {
+            points.push([i, j-1]);
+        }
+        if (j+1 < this.grid[0].length) {
+            points.push([i, j+1]);
+        }
+        return points
+    }
+
     //create an adjacency matrix of the elevation gains between neighboring nodes to be used to find the path
-    createAdjacencyMatrix() {
-        let adjMatrix = [];
+    createAdjacencyGraph() {
+        let adjGraph = {};
         //calculate elevation gain between each pair of neighbors
         for (let i = 0; i < this.grid.length; i++) {
             for (let j = 0; j < this.grid[i].length; j++) {
@@ -61,31 +97,36 @@ export class Djikstra {
                 // holds the elevation gains for this location
                 let elGains = [];
 
+                // add neighboring locations
+                adjGraph[this.grid[i][j]] = [];
+                this.getAdjacentPoints(i, j).forEach(point => {
+                    adjGraph[this.grid[i][j]].push(this.grid[points[0]][points[1]]);
+                });
                 // iterate through all grid locations
-                for (let k = 0; k < this.grid.length; k++) {
-                    for (let l = 0; l < this.grid[k].length; l++) {
+                // for (let k = 0; k < this.grid.length; k++) {
+                //     for (let l = 0; l < this.grid[k].length; l++) {
 
-                        // Elevation gain from (i, j) to (k, 1)
-                        let elevationGain = 0;
+                //         // Elevation gain from (i, j) to (k, 1)
+                //         let elevationGain = 0;
 
-                        if (this.isAdjacent(k, l, i, j)) {
-                            //if second point is higher, there is elevation gain, otherwise it is 0
-                            let klElevation = this.grid[k][l].getElevation();
-                            if (klElevation > currElevation) { 
-                                // if toggle is true then maximize elevation by doing 1/ gain
-                                elevationGain = this.toggle ? 1/(klElevation - currElevation) : klElevation - currElevation;
-                            } else {
-                                // if toggle is true then maximize elevation by setting to 1 otherwise 0
-                                elevationGain = this.toggle ? 1 : 0;
-                            }
-                        }
-                        else {
-                            elevationGain = MAX_ELEVATION;
-                        }
-                        elGains.push(elevationGain);
-                    }
-                }
-                adjMatrix.push(elGains);
+                //         if (this.isAdjacent(k, l, i, j)) {
+                //             //if second point is higher, there is elevation gain, otherwise it is 0
+                //             let klElevation = this.grid[k][l].getElevation();
+                //             if (klElevation > currElevation) { 
+                //                 // if toggle is true then maximize elevation by doing 1/ gain
+                //                 elevationGain = this.toggle ? 1/(klElevation - currElevation) : klElevation - currElevation;
+                //             } else {
+                //                 // if toggle is true then maximize elevation by setting to 1 otherwise 0
+                //                 elevationGain = this.toggle ? 1 : 0;
+                //             }
+                //         }
+                //         else {
+                //             elevationGain = MAX_ELEVATION;
+                //         }
+                //         elGains.push(elevationGain);
+                //     }
+                //}
+                //adjMatrix.push(elGains);
 
             }
         }
@@ -128,14 +169,14 @@ export class Djikstra {
         //         }
         //     }
         // }
-        console.log(adjMatrix);
-        return adjMatrix;
+        console.log(adjGraph);
+        return adjGraph;
     }
 
     //run Djikstra to get shortest path with adjMatrix values
     //at each sep check to make sure distance within x%
     //if exceeds x%, set distance to that node to infinity in matrix and visited to true
-    determinePath(adjMatrix) {
+    determinePath(adjGraph) {
         //find the shortest distance and distance within x% of that
         let startLocation = this.grid[this.startPosition[0]][this.startPosition[1]];
         let endLocation = this.grid[this.endPosition[0]][this.endPosition[1]];
@@ -185,6 +226,13 @@ export class Djikstra {
                 prevNodes[this.grid[i][j]] = null;
                 
             }
+        }
+
+        while (!pq.isEmpty()) {
+            let minNode = pq.dequeue();
+            let currElevation = minNode.getElevation();
+            this.adjGraph
+
         }
         //while we havent found the target node
         // while (pathToNode[this.nodesList.length - 1] === null) {

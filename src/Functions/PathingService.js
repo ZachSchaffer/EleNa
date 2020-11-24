@@ -179,8 +179,8 @@ export class PathingService {
     console.log(flatGrid);
     //run Djikstra algorithm to get shortest path
     let path = new Djikstra(grid, startPosition, endPosition, grid.length, grid[0].length, this.toggle, this.x);
-    let matrix = path.createAdjacencyMatrix();
-    return path.determinePath(matrix);
+    let graph = path.createAdjacencyGraph();
+    return path.determinePath(graph);
   }
 
   //calculate the search area within K % of the shortest path
