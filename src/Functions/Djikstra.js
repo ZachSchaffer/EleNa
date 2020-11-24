@@ -133,34 +133,59 @@ export class Djikstra {
     }
 
     //run Djikstra to get shortest path with adjMatrix values
-    //at each step check to make sure distance within x%
+    //at each sep check to make sure distance within x%
     //if exceeds x%, set distance to that node to infinity in matrix and visited to true
     determinePath(adjMatrix) {
         //find the shortest distance and distance within x% of that
+        let startLocation = this.grid[this.startPosition[0]][this.startPosition[1]];
+        let endLocation = this.grid[this.endPosition[0]][this.endPosition[1]];
         let shortestDistance = this.distance(
-            this.nodesList[0],
-            this.nodesList[this.nodesList.length - 1]
+            startLocation,
+            endLocation
         );
         let distancePlusX = shortestDistance * (1 + this.x / 100);
         let path = []; //the final path
-        let distances = []; //shortest distances to each node
+        let distances = {}; //shortest distances to each node
         let pathToNode = []; //track previous visited node to get to current node
         //push distances from start to all other nodes to begin with
-        for (let j = 0; j < this.nodesList.length; j++) {
-            pathToNode.push(null);
-            distances.push({
-                num: j,
-                node: this.nodesList[j],
-                dist: adjMatrix[0][j],
-                visited: j === 0 || this.nodesList[j].elevation === null,
-            });
-        }
+        // for (let i = 0 ; i < this.grid.length ; i++) {
+        //     for (let j = 0 ; j < this.grid[i].length ; j++) {
+        //         pathToNode.push(null);
+        //         distances.push({
+        //             index: [i,j],
+        //             node: this.grid[i][j],
+        //             dist: adjMatrix[0][(i*j)+j],
+        //             visited: (i===0 && j ===0) || this.grid[i][j].elevation === null,
+        //         })
+        //     }
+        // }
+
+        // for (let j = 0; j < this.nodesList.length; j++) {
+        //     pathToNode.push(null);
+        //     distances.push({
+        //         num: j,
+        //         node: this.nodesList[j],
+        //         dist: adjMatrix[0][j],
+        //         visited: j === 0 || this.nodesList[j].elevation === null,
+        //     });
+        // }
         let currNode = 0; //node that we are at now
         let pathSoFar = 0;  //distance travelled so far
 
         let prevNodes = {};
         let pq = new PriorityQueue(this.nodesList.length ** 2);
-        distances[]
+        pq.enqueue(startLocation, 0);
+        for (let i = 0 ; i < this.grid.length ; i ++) {
+            for (let j = 0 ; j < this.grid[i].length ; i++) {
+                if (this.startPosition[0] === i && this.startPosition[1] === j) {
+                    distances[startLocation] = 0;
+                } else {
+                    distances[this.grid[i][j]] = MAX_ELEVATION;
+                }
+                prevNodes[this.grid[i][j]] = null;
+                
+            }
+        }
         //while we havent found the target node
         // while (pathToNode[this.nodesList.length - 1] === null) {
         //     let minDistance = MAX_ELEVATION;
