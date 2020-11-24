@@ -1,6 +1,5 @@
 import React from 'react';
-import { List, Grid } from '@material-ui/core';
-import DirectionCard from '../../Components/DirectionCard/DirectionCard';
+import { Grid } from '@material-ui/core';
 import Card from '@material-ui/core/Card';
 import CardActions from '@material-ui/core/CardActions';
 import CardContent from '@material-ui/core/CardContent';
@@ -40,9 +39,9 @@ export default class TurnByTurn extends React.Component {
   getDistance() {
     let currentLoc = this.state.path[this.state.currentIndex];
     let prevLoc = this.state.path[this.state.prevIndex];
-    return Math.round(
+    return (
       Math.abs(currentLoc.getLongitude() - prevLoc.getLongitude()) * 111320
-    ); // Convert to meters
+    ).toFixed(3);
   }
 
   render() {
@@ -56,7 +55,7 @@ export default class TurnByTurn extends React.Component {
           spacing={2}
         >
           <Grid item>
-            <Card style={{ minWidth: '20vw', minHeight: '30vh' }}>
+            <Card style={{ minWidth: '20vw' }}>
               {this.state.currentIndex < this.state.path.length ? (
                 <div>
                   <CardContent>
