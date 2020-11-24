@@ -61,14 +61,30 @@ export default class TurnByTurn extends React.Component {
                   <CardContent>
                     <Typography color="textSecondary" gutterBottom>
                       Current Location:{' '}
-                      {this.state.path[this.state.currentIndex].getLatitude()}{' '}
+                      {this.state.path[this.state.currentIndex]
+                        .getLatitude()
+                        .toFixed(5)}{' '}
                       °N{' '}
-                      {-this.state.path[this.state.currentIndex].getLongitude()}{' '}
+                      {
+                        -this.state.path[this.state.currentIndex]
+                          .getLongitude()
+                          .toFixed(5)
+                      }{' '}
                       °W
                     </Typography>
                     <hr />
                     <Typography color="textSecondary" gutterBottom>
-                      Destination: Boston, MA
+                      Destination:{' '}
+                      {this.state.path[this.state.path.length - 1]
+                        .getLatitude()
+                        .toFixed(5)}{' '}
+                      °N
+                      {
+                        -this.state.path[this.state.path.length - 1]
+                          .getLongitude()
+                          .toFixed(5)
+                      }{' '}
+                      °W
                     </Typography>
                     <Typography variant="h5" component="p">
                       Turn {this.getDirection()}
