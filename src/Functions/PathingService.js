@@ -1,6 +1,6 @@
-//import PriorityQueue from 'priorityqueue';
+//
 import { getElevationURLAirMapMulti } from '../Functions/NetworkingFunctions';
-import { Dijkstra, FEET_IN_LAT_DEGREE, FEET_IN_LNG_DEGREE } from './Dijkstra';
+import { Djikstra, FEET_IN_LAT_DEGREE, FEET_IN_LNG_DEGREE } from './Djikstra';
 import Location from './Location';
 import axios from 'axios';
 
@@ -50,7 +50,7 @@ export class PathingService {
 
     // calculates the accuracy
     // scales based on the flat distance between the two locations
-    var accuracy = 27000 * Math.sqrt(latDif ** 2 + lngDif ** 2);
+    var accuracy = 50000 * Math.sqrt(latDif ** 2 + lngDif ** 2);
 
     // calculate distance between points and retrieve corners of the area
     var latVariation =
@@ -111,7 +111,8 @@ export class PathingService {
             // add the location to the grid
             grid[row].push(loc);
           }
-          //console.log(grid);
+          console.log("grid");
+          console.log(grid);
         } catch (error) {
           console.error(
             `Error: ${error}. Error extracting elevation. Ensure a valid address was input`
@@ -132,34 +133,52 @@ export class PathingService {
     console.log(corner);
     //turn grid into 1d array using a switch statement because the start node can be in different corners
     let flatGrid = [];
+    let startPosition = [];
+    let endPosition = [];
     switch (corner) {
       //start node is in the bottom right of the grid
       case 0:
-        for (let i = grid.length - 1; i >= 0; i--) {
-          flatGrid = flatGrid.concat(grid[i].reverse());
-        }
+        // for (let i = grid.length - 1; i >= 0; i--) {
+        //   flatGrid = flatGrid.concat(grid[i].reverse());
+        // }
+        startPosition.push(grid.length);
+        startPosition.push(grid[0].length);
+        endPosition.push(0);
+        endPosition.push(0);
         break;
       //bottom left
       case 1:
-        for (let i = grid.length - 1; i >= 0; i--) {
-          flatGrid = flatGrid.concat(grid[i]);
-        }
+        // for (let i = grid.length - 1; i >= 0; i--) {
+        //   flatGrid = flatGrid.concat(grid[i]);
+        // }
+        startPosition.push(grid.length);
+        startPosition.push(0);
+        endPosition.push(0);
+        endPosition.push(grid[0].length);
         break;
       //top right
       case 2:
-        for (let i = 0; i < grid.length; i++) {
-          flatGrid = flatGrid.concat(grid[i].reverse());
-        }
+        // for (let i = 0; i < grid.length; i++) {
+        //   flatGrid = flatGrid.concat(grid[i].reverse());
+        // }
+        startPosition.push(0);
+        startPosition.push(grid[0].length);
+        endPosition.push(grid.length);
+        endPosition.push(0);
         break;
       //top left
       default:
-        for (let i = 0; i < grid.length; i++) {
-          flatGrid = flatGrid.concat(grid[i]);
-        }
+        // for (let i = 0; i < grid.length; i++) {
+        //   flatGrid = flatGrid.concat(grid[i]);
+        // }
+        startPosition.push(0);
+        startPosition.push(0);
+        endPosition.push(grid.length);
+        endPosition.push(grid[0].length)
     }
     console.log(flatGrid);
-    //run Dijkstra algorithm to get shortest path
-    let path = new Dijkstra(flatGrid, grid.length, grid[0].length, this.toggle, this.x);
+    //run Djikstra algorithm to get shortest path
+    let path = new Djikstra(grid, startPosition, endPosition, grid.length, grid[0].length, this.toggle, this.x);
     let matrix = path.createAdjacencyMatrix();
     return path.determinePath(matrix);
   }
