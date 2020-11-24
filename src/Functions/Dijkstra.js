@@ -29,7 +29,7 @@ export class Dijkstra {
       let elevationDiff = [];
       let elevationGain = 0;
       for (let i = 0; i < this.nodesList.length; i++) {
-        if (j===i-1||j===i+1||j===i+this.width||j===i+this.width-1||j===i+this.width+1||j===i-this.width||j===i-this.width-1||j===i-this.width+1) {
+        if (j === i - 1 || j === i + 1 || j === i + this.width || j === i + this.width - 1 || j === i + this.width + 1 || j === i - this.width || j === i - this.width - 1 || j === i - this.width + 1) {
           if (this.nodesList[i].elevation - currNode > 0) {
             elevationGain = this.nodesList[i].elevation - currNode;
           } else {

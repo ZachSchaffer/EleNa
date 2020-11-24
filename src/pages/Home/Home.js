@@ -104,7 +104,7 @@ class Home extends React.Component {
           </FormControl>
           <br />
           <br />
-          Toggle minimization
+          <Typography>{this.state.toggle ? 'Maximize Elevation' : 'Minimize Elevation'}</Typography>
           <Switch
             onChange={(e) => this.setState({ toggle: e.target.checked })}
             name="checkedA"
@@ -127,11 +127,11 @@ class Home extends React.Component {
           <br />
           <br />
           {this.getElevationGain()}
-          <br/>
-          {this.state.path.length>0 && <>
+          <br />
+          {this.state.path.length > 0 && <>
             <Typography>{`The elevation at the start is ${this.state.path[0].getElevation()} ft`}</Typography>
-            <br/>
-            <Typography>{`The elevation at the end is ${this.state.path[this.state.path.length-1].getElevation()} ft`}</Typography>
+            <br />
+            <Typography>{`The elevation at the end is ${this.state.path[this.state.path.length - 1].getElevation()} ft`}</Typography>
           </>}
 
         </div>
