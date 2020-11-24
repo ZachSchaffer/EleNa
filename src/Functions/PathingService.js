@@ -157,7 +157,7 @@ export class PathingService {
         }
     }
     console.log(flatGrid);
-    let path = new Dijkstra(flatGrid, this.toggle, this.x);
+    let path = new Dijkstra(flatGrid, grid.length, grid[0].length, this.toggle, this.x);
     let matrix = path.createAdjacencyMatrix();
     return path.determinePath(matrix);
   }
