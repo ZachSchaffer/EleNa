@@ -47,7 +47,7 @@ export class Dijkstra {
     if (this.toggle) {
       for (let j = 0; j < this.nodesList.length; j++) {
         for (let i = 0; i < this.nodesList.length; i++) {
-          if (adjMatrix[i][j] !== 0) {
+          if (adjMatrix[i][j] !== 0 && adjMatrix[i][j] !== MAX_ELEVATION) {
             adjMatrix[i][j] = 1 / adjMatrix[i][j];
           }
         }
@@ -60,15 +60,6 @@ export class Dijkstra {
   //at each step check to make sure distance within x%
   //if exceeds x%, set distance to that node to infinity in matrix and visited to true
   determinePath(adjMatrix) {
-    // let pQueue = new PriorityQueue((a, b) => {
-    //   if (a.dist < b.dist) {
-    //     return -1;
-    //   } else if (a.dist > b.dist) {
-    //     return 1;
-    //   } else {
-    //     return 0;
-    //   }
-    // });
     let shortestDistance = this.distance(
       this.nodesList[0],
       this.nodesList[this.nodesList.length - 1]
@@ -88,8 +79,8 @@ export class Dijkstra {
     }
     let currNode = 0;
     let pathSoFar = 0;
-    //while (pathToNode[this.nodesList.length - 1] === null) {
-    for (let k = 0; k < 10; k++) {
+    while (pathToNode[this.nodesList.length - 1] === null) {
+    //for (let k = 0; k < 10; k++) {
       let minDistance = MAX_ELEVATION;
       let closestNode = null;
       for (let j = this.nodesList.length - 1; j >= 0; j--) {
@@ -129,9 +120,6 @@ export class Dijkstra {
           }
         }
       }
-      if (k === 9 && pathToNode[this.nodesList.length - 1] === null) {
-        pathToNode[this.nodesList.length - 1] = currNode;
-      }
     }
     if (pathToNode[this.nodesList.length - 1] !== null) {
       path.push(this.nodesList[this.nodesList.length - 1]);
@@ -141,21 +129,8 @@ export class Dijkstra {
         next = pathToNode[next];
       }
       path.push(this.nodesList[0]);
-    }
-    //}
-    let pathToReturn = [];
-    for (let i = path.length - 1; i >= 0; i--) {
-      pathToReturn.push(path[i]);
-    }
-    console.log(pathToReturn);
-    return pathToReturn;
-    // for (let j = 0; j < this.nodesList.length - 1; j++) {
-    //   pQueue.push({
-    //     node: this.nodesList[j],
-    //     //set elevation to large number to simulate infinity
-    //     dist: adjMatrix[currNode][j]
-    //   });
-    //}
-    //console.log(pQueue.pop());
+    } 
+    console.log(path.reverse());
+    return path.reverse();
   }
 }
