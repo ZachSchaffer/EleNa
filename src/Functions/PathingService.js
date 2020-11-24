@@ -1,6 +1,6 @@
 //
 import { getElevationURLAirMapMulti } from '../Functions/NetworkingFunctions';
-import { Djikstra, FEET_IN_LAT_DEGREE, FEET_IN_LNG_DEGREE } from './Djikstra';
+import { Dijkstra, FEET_IN_LAT_DEGREE, FEET_IN_LNG_DEGREE } from './Dijkstra';
 import Location from './Location';
 import axios from 'axios';
 
@@ -177,8 +177,8 @@ export class PathingService {
         endPosition.push(grid[0].length-1)
     }
     console.log(flatGrid);
-    //run Djikstra algorithm to get shortest path
-    let path = new Djikstra(grid, startPosition, endPosition, grid.length, grid[0].length, this.toggle, this.x);
+    //run Dijkstra algorithm to get shortest path
+    let path = new Dijkstra(grid, startPosition, endPosition, grid.length, grid[0].length, this.toggle, this.x);
     let graph = path.createAdjacencyMatrix();
     return path.determinePath(graph);
   }
