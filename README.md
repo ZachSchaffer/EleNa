@@ -6,6 +6,9 @@ Navigation system to determine a route which minimizes or maximizes elevation ga
 ## Check out the hosted application
 [EleNa](https://gonefishering-elena.web.app/home)
 
+## Check out a video demonstration of EleNa
+[EleNa Video Demonstration](https://www.youtube.com/watch?v=HPW9YIntYK8&feature=youtu.be)
+
 ## How to run locally
 In the project directory, you need to run:
 
