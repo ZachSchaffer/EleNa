@@ -3,8 +3,8 @@ export const FEET_IN_LAT_DEGREE = 364000;
 export const FEET_IN_LNG_DEGREE = 364434.53; // only for Amherst, MA
 const MAX_DISTANCE_OR_ELEVATION = 1000000;
 
-//This class runs the Djikstra algorithm on a grid of location objects passed from pathing service
-export class Djikstra {
+//This class runs the Dijkstra algorithm on a grid of location objects passed from pathing service
+export class Dijkstra {
     constructor(grid, startPosition, endPosition, height, width, toggle, x) {
         this.grid = grid;
         this.startPosition = startPosition;
@@ -87,7 +87,7 @@ export class Djikstra {
         return points;
     }
 
-    //create an adjacency matrix to be used by Djikstra where each cell is a list of adjacent positions
+    //create an adjacency matrix to be used by Dijkstra where each cell is a list of adjacent positions
     createAdjacencyMatrix() {
         let adjMatrix = [];
         for (let i = 0; i < this.grid.length; i++) {
@@ -126,7 +126,7 @@ export class Djikstra {
         return this.startPosition[0] === i && this.startPosition[1] === j;
     }
 
-    // Runs traditional djikstras on the generated adjMatrix and grid to determine what the baseline
+    // Runs traditional Dijkstras on the generated adjMatrix and grid to determine what the baseline
     // for the k% elevation algorithm should be
     determineShortestPathLength(adjMatrix) {
         let distances = []; // matrix of shortest distances to each node
@@ -147,7 +147,7 @@ export class Djikstra {
             }
         }
 
-        // run Djikstras
+        // run Dijkstras
         while (!pq.isEmpty()) {
             let position = pq.dequeue();
             let curr = this.grid[position[0]][position[1]];
@@ -171,13 +171,13 @@ export class Djikstra {
         return distances[this.endPosition[0]][this.endPosition[1]];
     }
 
-    //run Djikstra to get shortest path with adjMatrix values
+    //run Dijkstra to get shortest path with adjMatrix values
     //at each sep check to make sure distance within x%
     //if exceeds x%, set distance to that node to infinity in matrix and visited to true
     determinePath(adjMatrix) {
 
         //find the shortest distance and distance within x% of that
-        // run Djikstras using just distances to find the shortest path
+        // run Dijkstras using just distances to find the shortest path
         let shortestDistance = this.determineShortestPathLength(adjMatrix);
 
         // calculate the buffer range to accept paths within
@@ -210,7 +210,7 @@ export class Djikstra {
         // end location object
         let endLocation = this.grid[this.endPosition[0]][this.endPosition[1]];
 
-        // run Djikstras
+        // run Dijkstras
         while (!pq.isEmpty()) {
             let position = pq.dequeue();
             let currElevation = this.grid[position[0]][position[1]].getElevation();
