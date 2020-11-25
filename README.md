@@ -1,68 +1,75 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+# EleNa
+Navigation system to determine a route which minimizes or maximizes elevation gain, while limiting the total distance between the two locations to x% of the shortest path.
 
-## Available Scripts
+![EleNa example](https://cdn.discordapp.com/attachments/747874326073704518/780993106786254848/unknown.png)
 
-In the project directory, you can run:
+## Check out the hosted application
+[EleNa](https://gonefishering-elena.web.app/home)
+
+## How to run locally
+In the project directory, you need to run:
+
+### Install Node.js
+Nodejs is required to run the application
+
+### Install yarn
+Yarn is used to install the dependencies and run the application
+
+### `yarn install`
+This will install the necessary dependencies to run EleNa
 
 ### `yarn start`
-
-Runs the app in the development mode.<br />
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
-
-The page will reload if you make edits.<br />
-You will also see any lint errors in the console.
+This will start EleNa in your default browser assuming you ran `yarn install`
+- *Note: Avoid using Firefox*
 
 ### `yarn test`
+Run the automated testing framework
 
-Launches the test runner in the interactive watch mode.<br />
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## Route elevation color scale
+- blue: heavy decline
+- green: moderate decline
+- yellow: roughly flat
+- orange: moderate uphill
+- red: heavy uphill
 
-### `yarn build`
+## Adjust the % away from the shortest path
+Here you can see the difference between inputted 5% away from the shortest path vs 40% away from the shortest path while minimizing elevation when traveling from 160 Infirmary Way, Amherst, MA to Orchard Hill Drive, Amherst, MA
 
-Builds the app for production to the `build` folder.<br />
-It correctly bundles React in production mode and optimizes the build for the best performance.
+5% away from the shortest path
+![5% away](https://cdn.discordapp.com/attachments/747874326073704518/780997565625139250/unknown.png)
 
-The build is minified and the filenames include the hashes.<br />
-Your app is ready to be deployed!
+40% away from the shortest path
+![40% away](https://cdn.discordapp.com/attachments/747874326073704518/780997919288721408/unknown.png)
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## Turn by turn view
 
-### `yarn eject`
+There is a turn by turn card in the bottom right corner of the map which allows you to receive directions as you travel
+![Turn by turn view start](https://cdn.discordapp.com/attachments/747874326073704518/780994216721383434/unknown.png)
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+You can click next direction to navigate through the path
+![Intermediate location turn by turn](https://cdn.discordapp.com/attachments/747874326073704518/780994790229540884/unknown.png)
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+You can also toggle the 'Turn by Turn' view instead of the map view with the toggle on the left side
+![Turn by turn toggled](https://cdn.discordapp.com/attachments/747874326073704518/780995200846790706/unknown.png)
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+## Minimize and Maximize Elevation
+You can minimize or maximize your elevation gain when calculating your optimal path
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+Minimize elevation gain from 160 Infirmary Way, Amherst, MA to Orchard Hill Drive, Amherst, MA
+![minimize](https://cdn.discordapp.com/attachments/747874326073704518/780997565625139250/unknown.png)
+Maximize elevation gain from 160 Infirmary Way, Amherst, MA to Orchard Hill Drive, Amherst, MA
+![maximize](https://cdn.discordapp.com/attachments/747874326073704518/780998991868854292/unknown.png)
 
-## Learn More
+## Architecture
+![EleNa Architecture](https://cdn.discordapp.com/attachments/747874326073704518/780993141900836874/Screen_Shot_2020-11-24_at_10.07.34_PM.png)
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## Technologies
+- Front end: React (class based components)
+- APIs:
+    - Mapbox: Displaying the map
+    - MapQuest: Retrieving the latitude and longitude for the front end
+    - Maptiller: Themeing for the map
+    - Air Map: Used to retrieve the elevation data given a list of latitude and longitude points
+- Backend: JavaScript
 
-To learn React, check out the [React documentation](https://reactjs.org/).
 
-### Code Splitting
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/code-splitting
-
-### Analyzing the Bundle Size
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size
-
-### Making a Progressive Web App
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app
-
-### Advanced Configuration
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/advanced-configuration
-
-### Deployment
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/deployment
-
-### `yarn build` fails to minify
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify
