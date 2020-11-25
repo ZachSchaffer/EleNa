@@ -1,6 +1,8 @@
 # EleNa
 Navigation system to determine a route which minimizes or maximizes elevation gain, while limiting the total distance between the two locations to x% of the shortest path.
 
+[Github repo](https://github.com/ZachSchaffer/EleNa)
+
 ![EleNa example](https://cdn.discordapp.com/attachments/747874326073704518/780993106786254848/unknown.png)
 
 ## Check out the hosted application
