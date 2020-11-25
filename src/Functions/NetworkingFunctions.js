@@ -2,7 +2,7 @@ import axios from 'axios';
 import Location from './Location';
 
 export const getElevationURL = (lat, lng) => {
-  return `https://open.mapquestapi.com/elevation/v1/profile?key=${process.env.REACT_APP_MAPQUEST_API_KEY}&unit=f&shapeFormat=raw&latLngCollection=${lat},${lng}`;
+  return `https://open.mapquestapi.com/elevation/v1/profile?key=${process.env.REACT_APP_MAPQUEST_API_KEY}&unit=m&shapeFormat=raw&latLngCollection=${lat},${lng}`;
 };
 
 export const getGeoDataURL = (address) => {

@@ -23,14 +23,9 @@ export default class Navbar extends React.Component {
       <div>
         <AppBar position="static">
           <Toolbar>
-            <IconButton
-              edge="start"
-              color="inherit"
-              aria-label="menu"
-              onClick={this.toggleDrawer}
-            >
-              <MenuIcon />
-            </IconButton>
+            <Typography>
+              EleNa: Team Gone Fishering
+            </Typography>
           </Toolbar>
         </AppBar>
         <Drawer

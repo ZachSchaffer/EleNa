@@ -174,13 +174,14 @@ export class PathingService {
         startPosition.push(0);
         startPosition.push(0);
         endPosition.push(grid.length-1);
-        endPosition.push(grid[0].length-1)
+        endPosition.push(grid[0].length-1);
     }
     console.log(flatGrid);
     //run Dijkstra algorithm to get shortest path
     let path = new Dijkstra(grid, startPosition, endPosition, grid.length, grid[0].length, this.toggle, this.x);
     let graph = path.createAdjacencyMatrix();
-    return path.determinePath(graph);
+    console.log("the path from pathing service is: ", path.determinePath(graph).reverse());
+    return path.determinePath(graph).reverse();
   }
 
   //calculate the search area within K % of the shortest path
