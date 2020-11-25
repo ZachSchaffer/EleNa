@@ -8,6 +8,12 @@ import { BrowserRouter as Router } from 'react-router-dom';
 ReactDOM.render(
   <Router>
     <App />
+    <Switch>
+        <Redirect exact from="/" to="/home" />
+        <Route path="/home" exact component={Home} />
+        <Route path="/tbt" exact component={TurnByTurn} />
+        {/*<Route component={NotFound} />*/}
+      </Switch>
   </Router>,
   document.getElementById('root')
 );
