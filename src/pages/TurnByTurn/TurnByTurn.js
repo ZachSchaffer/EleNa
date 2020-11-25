@@ -19,7 +19,7 @@ export default class TurnByTurn extends React.Component {
   }
 
   nextDirection() {
-    this.props.updateIndex(this.state.currentIndex+1);
+    this.props.updateIndex && this.props.updateIndex(this.state.currentIndex+1);
     this.setState({ currentIndex: this.state.currentIndex + 1 });
   }
 
