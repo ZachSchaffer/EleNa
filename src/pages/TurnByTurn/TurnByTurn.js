@@ -11,8 +11,7 @@ export default class TurnByTurn extends React.Component {
     super();
     this.state = {
       path: props.path,
-      currentIndex: 1,
-      prevIndex: 0,
+      currentIndex: 0,
     };
     this.getDirection = this.getDirection.bind(this);
     this.getDistance = this.getDistance.bind(this);
@@ -20,29 +19,51 @@ export default class TurnByTurn extends React.Component {
   }
 
   nextDirection() {
-    this.props.updateIndex(this.state.currentIndex);
-    this.state.prevIndex = this.state.currentIndex;
+    this.props.updateIndex(this.state.currentIndex+1);
     this.setState({ currentIndex: this.state.currentIndex + 1 });
   }
 
   getDirection() {
+    let direction = '';
     let currentLoc = this.state.path[this.state.currentIndex];
-    let prevLoc = this.state.path[this.state.prevIndex];
-    if (currentLoc.getLongitude() < prevLoc.getLongitude()) {
-      return 'West';
-    } else if (currentLoc.getLongitude() > prevLoc.getLongitude()) {
-      return 'East';
+    let nextLoc = this.state.path[this.state.currentIndex+1];
+    if (currentLoc.getLatitude() < nextLoc.getLatitude()) {
+      direction = direction + 'North';
+    } else if (currentLoc.getLatitude() > nextLoc.getLatitude()) {
+      direction = direction + 'South';
     } else {
-      return '';
+      direction = direction + '';
     }
+    if (currentLoc.getLongitude() < nextLoc.getLongitude()) {
+      direction = direction + 'East';
+    } else if (currentLoc.getLongitude() > nextLoc.getLongitude()) {
+      direction = direction + 'West';
+    } else {
+      direction = direction + '';
+    }
+    return direction
+  }
+  
+  getDistance() {
+    const FEET_IN_LAT_DEGREE = 364000;
+    const FEET_IN_LNG_DEGREE = 364434.53; // only for Amherst, MA
+    var latDif = Math.abs(this.state.path[this.state.currentIndex].getLatitude() - this.state.path[this.state.currentIndex+1].getLatitude());
+    var lngDif = Math.abs(this.state.path[this.state.currentIndex].getLongitude() - this.state.path[this.state.currentIndex+1].getLongitude());
+    var latFeet = latDif * FEET_IN_LAT_DEGREE;
+    var lngFeet = lngDif * FEET_IN_LNG_DEGREE;
+    return (Math.sqrt(latFeet ** 2 + lngFeet ** 2) * 0.3048).toFixed(3); // Distance in miles
   }
 
-  getDistance() {
+  getElevation() {
     let currentLoc = this.state.path[this.state.currentIndex];
-    let prevLoc = this.state.path[this.state.prevIndex];
-    return (
-      Math.abs(currentLoc.getLongitude() - prevLoc.getLongitude()) * 111320
-    ).toFixed(3);
+    let nextLoc = this.state.path[this.state.currentIndex+1];
+    let elevation = '';
+    try {
+      elevation = nextLoc.getElevation() - currentLoc.getElevation();
+    } catch (error) {
+      console.error("error getting elevations");
+    }
+    return elevation ;
   }
 
   render() {
@@ -57,7 +78,7 @@ export default class TurnByTurn extends React.Component {
         >
           <Grid item>
             <Card style={{ minWidth: '20vw' }}>
-              {this.state.currentIndex < this.state.path.length ? (
+              {this.state.currentIndex < this.state.path.length-1 ? (
                 <div>
                   <CardContent>
                     <Typography color="textSecondary" gutterBottom>
@@ -92,6 +113,9 @@ export default class TurnByTurn extends React.Component {
                     </Typography>
                     <Typography variant="h5" component="p">
                       Travel {this.getDistance()} Meters
+                    </Typography>
+                    <Typography variant="h5" component="p">
+                      Incline: {this.getElevation()} Meters
                     </Typography>
                   </CardContent>
                   <CardActions>
