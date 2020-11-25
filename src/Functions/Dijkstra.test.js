@@ -78,48 +78,10 @@ test('test adjacentPoints', () => {
 
 })
 
-test('test getPathDistance', () => {
-
-  let nodesList = [
-    [1,1],
-    [2,2]
-  ]
-
-  let test = new Dijkstra(nodesList, [1,1], [2,2], 1, 1, 0, 0)
-
-  expect(test.getPathDistance(nodesList, [1,1], 2)).ToEqual()
-
-})
-
 test('test isStartPosition', () => {
 
   let test = new Dijkstra([], [1,1], [2,2], 1, 1, 0, 0)
 
   expect(test.isStartPosition(1,1)).toBeTruthy()
 
-
 })
-
-test('test determineShortestPathLength', () => {
-
-  let nodesList = [
-    [1,1,1]
-  ]
-
-  let test = new Dijkstra(nodesList,  new Location(1,1, 0) , new Location(6,6,4), 100, 100, true, 100);
-  let result = test.createAdjacencyMatrix();
-
-  expect(test.determineShortestPathLength(result)).ToBe()
-})
-
-
-test('test determinePath', () => {
-
-  let nodesList = [
-    [1,1,1]
-  ]
-
-  let test = new Dijkstra(nodesList,  new Location(1,1, 0) , new Location(6,6,4), 100, 100, true, 100);
-  let result = test.createAdjacencyMatrix();
-
-  expect(test.determinePath(result)).ToBe()})
