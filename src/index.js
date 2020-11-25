@@ -3,7 +3,9 @@ import ReactDOM from 'react-dom';
 import './index.css';
 import App from './Components/App/App';
 import * as serviceWorker from './serviceWorker';
-import { BrowserRouter as Router } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Redirect, Switch } from 'react-router-dom';
+import Home from './pages/Home/Home';
+import TurnByTurn from './pages/TurnByTurn/TurnByTurn';
 
 ReactDOM.render(
   <Router>
