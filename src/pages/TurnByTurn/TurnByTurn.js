@@ -20,6 +20,7 @@ export default class TurnByTurn extends React.Component {
   }
 
   nextDirection() {
+    this.props.updateIndex(this.state.currentIndex);
     this.state.prevIndex = this.state.currentIndex;
     this.setState({ currentIndex: this.state.currentIndex + 1 });
   }
@@ -78,7 +79,7 @@ export default class TurnByTurn extends React.Component {
                       {this.state.path[this.state.path.length - 1]
                         .getLatitude()
                         .toFixed(5)}{' '}
-                      °N
+                      °N{' '}
                       {
                         -this.state.path[this.state.path.length - 1]
                           .getLongitude()
